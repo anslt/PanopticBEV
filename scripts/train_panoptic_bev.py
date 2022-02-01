@@ -440,7 +440,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         print("img:", sample["img"]._tensors[0].size())
         print("bev_msk", sample["bev_msk"]._tensors[0].size())
         print("front_msk", sample["front_msk"]._tensors[0].size())
-        print("weights_msk", sample["weights_msk"._tensors[0].size()])
+        print("weights_msk", sample["weights_msk"]._tensors[0].size())
 
         # Run network
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
