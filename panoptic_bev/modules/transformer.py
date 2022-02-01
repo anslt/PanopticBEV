@@ -186,7 +186,7 @@ class FlatTransformer(nn.Module):
         feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
 
         f_feat = feat_bev_ecm + feat_bev_ipm
-        print(f_feat.size())
+        ## print(f_feat.size())
         f_feat = f_feat + self.post_process_residual(f_feat)
         f_logits = self.f_region_estimation(f_feat)
         f_feat = self.ch_mapper_out(f_feat)
