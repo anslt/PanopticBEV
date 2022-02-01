@@ -164,7 +164,7 @@ class PanopticBevNet(nn.Module):
         print("img:", img.size())
         print("bev_msk", bev_msk.size())
         print("front_msk", front_msk.size())
-        print("weights_msk", weights_msk._tensor[0].size())
+        print("weights_msk", weights_msk._tensors[0].size())
         print("calib:", calib)
         # torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
