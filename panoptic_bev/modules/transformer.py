@@ -153,12 +153,13 @@ class FlatTransformer(nn.Module):
         for b_idx in range(feat.shape[0]):
             theta_ipm_i = get_init_homography(intrinsics[b_idx].cpu().numpy(), self.extrinsics, self.bev_params,
                                               self.img_scale, self.out_img_size_reverse).view(-1, 3, 3).to(feat.device)
-            print(intrinsics[b_idx].cpu().numpy())
-            torch.save(theta_ipm_i.cpu(), "ex/ipm_value"+str(int(time.time() * 1000))+".pt")
+            # print(intrinsics[b_idx].cpu().numpy())
+            torch.save(theta_ipm_i.cpu(), "ex/ipm_value_"+str(int(time.time() * 1000))+".pt")
             theta_ipm_list.append(theta_ipm_i)
         theta_ipm = torch.cat(theta_ipm_list, dim=0)
         feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
         feat_bev_ipm = torch.rot90(feat_bev_ipm, k=2, dims=[2, 3])
+        torch.save(feat_bev_ipm.cpu(), "ex/feat_" + str(int(time.time() * 1000)) + ".pt")
 
         # Find the regions where IPM goes wrong and apply the ECN to those regions
         ipm_f_logits = self.ipm_confident_region_estimation(feat_bev_ipm)  # Get the logits where the IPM is "confident"
