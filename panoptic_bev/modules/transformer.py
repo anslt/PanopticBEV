@@ -161,7 +161,7 @@ class FlatTransformer(nn.Module):
         theta_ipm = torch.cat(theta_ipm_list, dim=0)
         feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
         feat_bev_ipm = torch.rot90(feat_bev_ipm, k=2, dims=[2, 3])
-        ## torch.save(feat_bev_ipm.cpu(), "ex/feat_" + str(int(time.time() * 1000)) + ".pt")
+        torch.save(torch.rot90(feat_bev_ipm, k=1, dims=[2, 3]).cpu(), "ex/feat_rot90_" + str(int(time.time() * 1000)) + ".pt")
 
         # Find the regions where IPM goes wrong and apply the ECN to those regions
         ipm_f_logits = self.ipm_confident_region_estimation(feat_bev_ipm)  # Get the logits where the IPM is "confident"
