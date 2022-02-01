@@ -701,6 +701,7 @@ def main(args):
         optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
     # Training loop
+    print(len(train_dataloader))
     momentum = 1. - 1. / len(train_dataloader)
     train_meters = {
         "loss": AverageMeter((), momentum),
