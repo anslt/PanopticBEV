@@ -154,7 +154,7 @@ class FlatTransformer(nn.Module):
                                               self.img_scale, self.out_img_size_reverse).view(-1, 3, 3).to(feat.device)
             theta_ipm_list.append(theta_ipm_i)
         theta_ipm = torch.cat(theta_ipm_list, dim=0)
-        feat_bev_ipm = kornia.geometry.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
+        feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
         feat_bev_ipm = torch.rot90(feat_bev_ipm, k=2, dims=[2, 3])
 
         # Find the regions where IPM goes wrong and apply the ECN to those regions
