@@ -478,6 +478,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         del losses, stats, sample
 
         # Log to tensorboard and console
+        print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
@@ -644,6 +645,8 @@ def main(args):
         device_id, device = args.local_rank, torch.device(args.local_rank)
         rank, world_size = distributed.get_rank(), distributed.get_world_size()
         torch.cuda.set_device(device_id)
+        print(rank)
+        print(world_size)
     else:
         rank = 0
         world_size = 1
@@ -701,7 +704,7 @@ def main(args):
         optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
     # Training loop
-    print(len(train_dataloader))
+    ## print(len(train_dataloader))
     momentum = 1. - 1. / len(train_dataloader)
     train_meters = {
         "loss": AverageMeter((), momentum),
