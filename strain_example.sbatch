@@ -6,8 +6,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=1:00:00
 #SBATCH --mail-type=ALL
-#SBATCH --output=/storage/user/shil/PanopticBEV_mine/slurm_logs/slurm-%j.out
-#SBATCH --error=/storage/user/shil/PanopticBEV_mine/slurm_logs/slurm-%j.out
+#SBATCH --output=/storage/slurm/shil/nuscenes/example_logs/slurm-%j.out
+#SBATCH --error=/storage/slurm/shil/nuscenes/example_logs/slurm-%j.out
 
 module load cuda/11.1 cudnn
 
