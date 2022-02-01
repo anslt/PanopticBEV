@@ -686,7 +686,7 @@ def main(args):
         model = DistributedDataParallel(model.cuda(device), device_ids=[device_id], output_device=device_id,
                                         find_unused_parameters=True)
     else:
-        print(model)
+        # print(model)
         model = model.cuda(device)
 
     # Create optimizer
