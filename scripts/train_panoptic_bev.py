@@ -436,7 +436,10 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         batch_time = time.time()
 
-        print(sample)
+        print("img:", sample["img"]._tensors.size())
+        print("bev_msk", sample["bev_msk"]._tensors.size())
+        print("front_msk", sample["front_msk"]._tensors.size())
+        print("weights_msk", sample["weights_msk"._tensors.size()])
 
         # Run network
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
