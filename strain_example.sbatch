@@ -21,7 +21,7 @@ python3 scripts/train_panoptic_bev.py \
     --train_dataset=nuScenes \
     --val_dataset=nuScenes \
     --config=nuscenes_example.ini \
-    --debug=True \
+    --debug=False \
     --local_rank=0
 
 
