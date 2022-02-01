@@ -168,8 +168,8 @@ class PanopticBevNet(nn.Module):
         # print("calib:", calib)
         # torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
-        print(len(v_region_mask_gt))
-        print(len(f_region_mask_gt))
+        print(v_region_mask_gt[0].size())
+        print(f_region_mask_gt[0].size())
 
         # Get the image features
         ms_feat = self.body(img)
