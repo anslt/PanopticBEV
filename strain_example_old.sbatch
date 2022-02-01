@@ -20,6 +20,8 @@ python3 scripts/train_panoptic_bev.py \
     --mode=train \
     --train_dataset=nuScenes \
     --val_dataset=nuScenes \
-    --config=nuscenes_example.ini 
+    --config=nuscenes_example.ini \
+    --debug=True \
+    --local_rank=0
 
 
