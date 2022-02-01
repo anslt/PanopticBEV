@@ -3,6 +3,7 @@ from torch.nn import functional as F
 import torch
 import kornia
 from inplace_abn import ABN
+import time
 
 from panoptic_bev.utils.transformer import get_init_homography
 
@@ -152,6 +153,8 @@ class FlatTransformer(nn.Module):
         for b_idx in range(feat.shape[0]):
             theta_ipm_i = get_init_homography(intrinsics[b_idx].cpu().numpy(), self.extrinsics, self.bev_params,
                                               self.img_scale, self.out_img_size_reverse).view(-1, 3, 3).to(feat.device)
+            print(intrinsics[b_idx].cpu().numpy())
+            torch.save(theta_ipm_i.cpu(), "ex/ipm_value"+str(int(time.time() * 1000))+".pt")
             theta_ipm_list.append(theta_ipm_i)
         theta_ipm = torch.cat(theta_ipm_list, dim=0)
         feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
