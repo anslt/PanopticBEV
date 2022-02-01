@@ -168,11 +168,11 @@ class PanopticBevNet(nn.Module):
         # print("calib:", calib)
         # torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
-        print(v_region_mask_gt[0].size())
-        print(f_region_mask_gt[0].size())
 
         # Get the image features
         ms_feat = self.body(img)
+        for feat in ms_feat:
+            print(feat.size())
 
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
