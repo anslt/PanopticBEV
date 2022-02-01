@@ -12,7 +12,7 @@
 module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
-python3 script/train_panoptic_bev.py \
+python3 scripts/train_panoptic_bev.py \
     --run_name=nuscenes_`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=/usr/stud/shil/storage/user/shil/PanopticBEV_mine/PanopticBEV \
     --seam_root_dir=/usr/stud/shil/storage/user/shil/PanopticBEV_mine/PanopticBEV/nuScenes_panopticbev_mini2 \
