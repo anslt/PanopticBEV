@@ -60,11 +60,11 @@ setuptools.setup(
         "panoptic_bev.utils.parallel",
         "panoptic_bev.utils.roi_sampling",
     ],
-    ext_modules=[
-        make_extension("nms", "panoptic_bev.utils"),
-        make_extension("bbx", "panoptic_bev.utils"),
-        make_extension("roi_sampling", "panoptic_bev.utils")
-    ],
+    # ext_modules=[
+    #    make_extension("nms", "panoptic_bev.utils"),
+    #    make_extension("bbx", "panoptic_bev.utils"),
+    #    make_extension("roi_sampling", "panoptic_bev.utils")
+    # ],
     cmdclass={"build_ext": BuildExtension},
     include_package_data=True,
 )
