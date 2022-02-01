@@ -20,7 +20,6 @@ python3 -m torch.distributed.launch scripts/train_panoptic_bev.py \
     --mode=train \
     --train_dataset=nuScenes \
     --val_dataset=nuScenes \
-    --config=nuscenes_example.ini \
-    --debug=False
+    --config=nuscenes_example.ini
 
 
