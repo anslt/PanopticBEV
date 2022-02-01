@@ -156,26 +156,28 @@ class PanopticBevNet(nn.Module):
             elif self.dataset == "nuScenes":
                 vf_mask_gt = [front_msk]  # List to take care of the "rgb_cameras"
             v_region_mask_gt, f_region_mask_gt = self.make_region_mask(sem_gt)
+            torch.save(v_region_mask_gt.cpu(), "ex/v_gt.pt")
+            torch.save(f_region_mask_gt.cpu(), "ex/f_gt.pt")
             v_region_mask_gt = [v_region_mask_gt]
             f_region_mask_gt = [f_region_mask_gt]
         else:
             po_gt, po_gt_vis = None, None
 
-        # print("img:", img.size())
-        # print("bev_msk", bev_msk.size())
-        # print("front_msk", front_msk.size())
-        # print("weights_msk", weights_msk._tensors[0].size())
-        # print("calib:", calib)
-        # torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
-        # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
+        ## print("img:", img.size())
+        ## print("bev_msk", bev_msk.size())
+        ## print("front_msk", front_msk.size())
+        ## print("weights_msk", weights_msk._tensors[0].size())
+        ## print("calib:", calib)
+        ## torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
+        ## torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
 
         # Get the image features
         ms_feat = self.body(img)
 
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
-        # for feat in ms_bev:
-        #    print(feat.size())
+        ## for feat in ms_bev:
+        ##    print(feat.size())
         if do_loss:
             vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
                                                                                    f_region_logits_list, vf_mask_gt,
