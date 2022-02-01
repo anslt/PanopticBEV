@@ -436,6 +436,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         batch_time = time.time()
 
+        print(sample)
+
         # Run network
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
         if not varargs['debug']:
