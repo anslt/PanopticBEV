@@ -190,6 +190,7 @@ class FlatTransformer(nn.Module):
         f_feat = f_feat + self.post_process_residual(f_feat)
         f_logits = self.f_region_estimation(f_feat)
         f_feat = self.ch_mapper_out(f_feat)
+        print(f_logits.size())
 
         return f_feat, f_logits
 
