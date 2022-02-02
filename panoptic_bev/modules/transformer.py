@@ -315,6 +315,8 @@ class TransformerVF(nn.Module):
         vf_softmax = vf_logits.softmax(dim=1)
         v_att = vf_softmax[:, 0, :, :].unsqueeze(1)
         f_att = vf_softmax[:, 1, :, :].unsqueeze(1)
+        print(feat.size())
+        
 
         # Get the vertical and flat features by applying the generated attention masks to the frontal-view features
         feat_v = feat * v_att

@@ -645,8 +645,6 @@ def main(args):
         device_id, device = args.local_rank, torch.device(args.local_rank)
         rank, world_size = distributed.get_rank(), distributed.get_world_size()
         torch.cuda.set_device(device_id)
-        print(rank)
-        print(world_size)
     else:
         rank = 0
         world_size = 1
