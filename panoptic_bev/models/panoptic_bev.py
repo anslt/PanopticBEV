@@ -176,16 +176,16 @@ class PanopticBevNet(nn.Module):
 
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
-        for feat in ms_bev:
-            print(feat.size())
-        if False:
-            vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
-                                                                                   f_region_logits_list, vf_mask_gt,
-                                                                                   v_region_mask_gt, f_region_mask_gt)
-        elif do_prediction:
-            vf_loss, v_region_loss, f_region_loss = None, None, None
-        else:
-            vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
+        # for feat in ms_bev:
+        #     print(feat.size())
+        # if do_loss:
+        #     vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
+        #                                                                            f_region_logits_list, vf_mask_gt,
+        #                                                                            v_region_mask_gt, f_region_mask_gt)
+        # elif do_prediction:
+        #     vf_loss, v_region_loss, f_region_loss = None, None, None
+        # else:
+        #     vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
 
         # RPN Part
         if do_loss:
