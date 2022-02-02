@@ -478,7 +478,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         del losses, stats, sample
 
         # Log to tensorboard and console
-        print(it)
+        # print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
