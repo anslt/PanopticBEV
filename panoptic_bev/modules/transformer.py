@@ -336,18 +336,10 @@ class TransformerVF(nn.Module):
         # This takes into account the extreme cases where one dimension is a few pixels short
         feat_v = F.interpolate(feat_v, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
         feat_f = F.interpolate(feat_f, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
-        print("feat_v2:")
-        print(feat_v.size())
-        print("feat_f2:")
-        print(feat_f.size())
 
         # Merge the vertical and flat transforms
         feat_merged = self.merge_feat_vf(feat_v, feat_f)
-        print("feat_m1:")
-        print(feat_merged.size())
         feat_merged = self.dummy(self.ch_mapper_out(feat_merged))
-        print("feat_m2:")
-        print(feat_merged.size())
 
         del feat_v, feat_f
 
