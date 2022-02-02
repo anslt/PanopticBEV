@@ -124,15 +124,15 @@ class FlatTransformer(nn.Module):
                                            norm_act(in_ch))
 
         # Account for the errors made by the IPM part of the flat transformer
-        self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
+        # self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
 
         self.f_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
                                                  norm_act(f_2d_ch),
                                                  nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
 
-        self.ipm_confident_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                                             norm_act(f_2d_ch),
-                                                             nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
+        # self.ipm_confident_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
+        #                                                      norm_act(f_2d_ch),
+        #                                                      nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
 
         self.post_process_residual = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
                                           norm_act(f_2d_ch),
@@ -142,7 +142,7 @@ class FlatTransformer(nn.Module):
 
         self.f_dummy = nn.Conv2d(f_2d_ch, f_2d_ch, 1, bias=False)
 
-        self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
+        # self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
 
     def forward(self, feat, intrinsics):
         feat = self.f_dummy(self.ch_mapper_in(feat))
@@ -164,28 +164,28 @@ class FlatTransformer(nn.Module):
         ## torch.save(torch.rot90(feat_bev_ipm, k=1, dims=[2, 3]).cpu(), "ex/feat_rot90_" + str(int(time.time() * 1000)) + ".pt")
 
         # Find the regions where IPM goes wrong and apply the ECN to those regions
-        ipm_f_logits = self.ipm_confident_region_estimation(feat_bev_ipm)  # Get the logits where the IPM is "confident"
-        ipm_incorrect = 1 - ipm_f_logits.sigmoid()  # Get the mask where the IPM is assumed to be incorrect
+        # ipm_f_logits = self.ipm_confident_region_estimation(feat_bev_ipm)  # Get the logits where the IPM is "confident"
+        # ipm_incorrect = 1 - ipm_f_logits.sigmoid()  # Get the mask where the IPM is assumed to be incorrect
+        #
+        # # Convert the incorrect mask back into the FV and use it to get the erroneous features in the FV
+        # ipm_incorrect = torch.rot90(ipm_incorrect, k=2, dims=[2, 3])
+        # ipm_incorrect_fv = kornia.geometry.transform.warp_perspective(ipm_incorrect, torch.inverse(theta_ipm), (feat.shape[2], feat.shape[3]))
+        # feat_ecm_fv = (feat * ipm_incorrect_fv)
+        #
+        # # Add the regions that are ignored by the IPM algorithm --> Regions above the principal point.
+        # # These points have the ipm_incorrect_fv value to 0. Just use that as a mask.
+        # ignored_by_ipm_mask = (ipm_incorrect_fv == 0)
+        # feat = feat * ignored_by_ipm_mask
+        # feat_ecm_fv = feat_ecm_fv + feat
+        # del feat
+        #
+        # # Apply the ErrorCorrectionModule to the regions where IPM made a mistake
+        # feat_bev_ecm = self.ecm(feat_ecm_fv)
+        # feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
+        # feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
+        # feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
 
-        # Convert the incorrect mask back into the FV and use it to get the erroneous features in the FV
-        ipm_incorrect = torch.rot90(ipm_incorrect, k=2, dims=[2, 3])
-        ipm_incorrect_fv = kornia.geometry.transform.warp_perspective(ipm_incorrect, torch.inverse(theta_ipm), (feat.shape[2], feat.shape[3]))
-        feat_ecm_fv = (feat * ipm_incorrect_fv)
-
-        # Add the regions that are ignored by the IPM algorithm --> Regions above the principal point.
-        # These points have the ipm_incorrect_fv value to 0. Just use that as a mask.
-        ignored_by_ipm_mask = (ipm_incorrect_fv == 0)
-        feat = feat * ignored_by_ipm_mask
-        feat_ecm_fv = feat_ecm_fv + feat
-        del feat
-
-        # Apply the ErrorCorrectionModule to the regions where IPM made a mistake
-        feat_bev_ecm = self.ecm(feat_ecm_fv)
-        feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
-        feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
-        feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
-
-        f_feat = feat_bev_ecm + feat_bev_ipm
+        f_feat = feat_bev_ipm
         ## print(f_feat.size())
         f_feat = f_feat + self.post_process_residual(f_feat)
         f_logits = self.f_region_estimation(f_feat)
@@ -275,13 +275,13 @@ class TransformerVF(nn.Module):
         self.ch_mapper_in = nn.Sequential(nn.Conv2d(in_ch, tfm_ch, 1, padding=0, bias=False),
                                           norm_act(tfm_ch))
 
-        self.vf_estimation = nn.Sequential(nn.Conv2d(tfm_ch, tfm_ch//2, 1, 1, padding=0, bias=False),
-                                           norm_act(tfm_ch//2),
-                                           nn.Conv2d(tfm_ch//2, tfm_ch//2, 3, 1, padding=1, bias=False),
-                                           norm_act(tfm_ch//2),
-                                           nn.Conv2d(tfm_ch // 2, tfm_ch // 2, 3, 1, padding=1, bias=False),
-                                           norm_act(tfm_ch // 2),
-                                           nn.Conv2d(tfm_ch//2, 2, 1, 1, padding=0, bias=False))
+        # self.vf_estimation = nn.Sequential(nn.Conv2d(tfm_ch, tfm_ch//2, 1, 1, padding=0, bias=False),
+        #                                    norm_act(tfm_ch//2),
+        #                                    nn.Conv2d(tfm_ch//2, tfm_ch//2, 3, 1, padding=1, bias=False),
+        #                                    norm_act(tfm_ch//2),
+        #                                    nn.Conv2d(tfm_ch // 2, tfm_ch // 2, 3, 1, padding=1, bias=False),
+        #                                    norm_act(tfm_ch // 2),
+        #                                    nn.Conv2d(tfm_ch//2, 2, 1, 1, padding=0, bias=False))
 
         self.Z_out = int(Z_out * img_scale)
         self.W_out = int(W_out * img_scale)
@@ -291,13 +291,14 @@ class TransformerVF(nn.Module):
         # /2 to centre the car in the image vertically
         extents = [-(self.W_out * resolution / 2), 0, (self.W_out * resolution / 2), self.Z_out * resolution]
 
-        self.v_transform = VerticalTransformer(in_ch=tfm_ch, v_2d_ch=tfm_ch // 2, v_3d_ch=tfm_ch // 2, img_size_in=(H_in, W_in),
-                                               img_size_out=(Z_out, W_out), extents=extents, img_scale=img_scale,
-                                               resolution=resolution, norm_act=norm_act)
+        ## self.v_transform = VerticalTransformer(in_ch=tfm_ch, v_2d_ch=tfm_ch // 2, v_3d_ch=tfm_ch // 2, img_size_in=(H_in, W_in),
+        ##                                        img_size_out=(Z_out, W_out), extents=extents, img_scale=img_scale,
+        ##                                        resolution=resolution, norm_act=norm_act)
+
         self.f_transform = FlatTransformer(tfm_ch, tfm_ch, extrinsics, bev_params, (H_in, W_in), (W_out, Z_out),
                                            img_scale, extents, resolution, norm_act)
 
-        self.merge_feat_vf = MergeFeaturesVF(tfm_ch, norm_act=norm_act)
+        ## self.merge_feat_vf = MergeFeaturesVF(tfm_ch, norm_act=norm_act)
 
         self.ch_mapper_out = nn.Sequential(nn.Conv2d(tfm_ch, out_ch, 1, padding=0, bias=False),
                                            norm_act(out_ch))
@@ -311,42 +312,38 @@ class TransformerVF(nn.Module):
 
         # Compute the vertical-flat attention mask
         # Vertical = Channel 0; Flat = Channel 1
-        vf_logits = self.vf_estimation(feat)
-        vf_softmax = vf_logits.softmax(dim=1)
-        v_att = vf_softmax[:, 0, :, :].unsqueeze(1)
-        f_att = vf_softmax[:, 1, :, :].unsqueeze(1)
-        ## print(feat.size())
-
+        # vf_logits = self.vf_estimation(feat)
+        # vf_softmax = vf_logits.softmax(dim=1)
+        # v_att = vf_softmax[:, 0, :, :].unsqueeze(1)
+        # f_att = vf_softmax[:, 1, :, :].unsqueeze(1)
 
         # Get the vertical and flat features by applying the generated attention masks to the frontal-view features
-        feat_v = feat * v_att
-        feat_f = feat * f_att
+        # feat_v = feat * v_att
+        # feat_f = feat * f_att
 
-        del v_att, f_att
+        # del v_att, f_att
 
         # Perform the transformations on vertical and flat regions of the image plane feature map
-        feat_v, v_region_logits = self.v_transform(feat_v, intrinsics)
-        feat_f, f_region_logits = self.f_transform(feat_f, intrinsics)
-        print("feat_v1:")
-        print(feat_v.size())
-        print("feat_f1:")
-        print(feat_f.size())
+        # feat_v, v_region_logits = self.v_transform(feat_v, intrinsics)
+        feat_merged, f_region_logits = self.f_transform(feat, intrinsics)
 
         # Resize the feature maps to the output size
         # This takes into account the extreme cases where one dimension is a few pixels short
-        feat_v = F.interpolate(feat_v, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
-        feat_f = F.interpolate(feat_f, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
+        # feat_v = F.interpolate(feat_v, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
+        # feat_f = F.interpolate(feat_f, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
 
         # Merge the vertical and flat transforms
-        feat_merged = self.merge_feat_vf(feat_v, feat_f)
+        # feat_merged = self.merge_feat_vf(feat_v, feat_f)
         feat_merged = self.dummy(self.ch_mapper_out(feat_merged))
 
-        del feat_v, feat_f
+        # del feat_v, feat_f
 
         # In the merged features, the ego car is at the bottom and something far away is at the top.
         # Rotate it to match the output --> The ego car is on the left and something far away is towards the right
         feat_merged = torch.rot90(feat_merged, k=1, dims=[2, 3])
-        v_region_logits = torch.rot90(v_region_logits, k=1, dims=[2, 3])
-        f_region_logits = torch.rot90(f_region_logits, k=1, dims=[2, 3])
+        # v_region_logits = torch.rot90(v_region_logits, k=1, dims=[2, 3])
+        # f_region_logits = torch.rot90(f_region_logits, k=1, dims=[2, 3])
+        vf_logits = 0
+        v_region_logits = 0
 
         return feat_merged, vf_logits, v_region_logits, f_region_logits
