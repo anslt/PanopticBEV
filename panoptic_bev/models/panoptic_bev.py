@@ -179,7 +179,7 @@ class PanopticBevNet(nn.Module):
         ## for feat in ms_bev:
         ##     print(feat.size())
         if do_loss:
-            vf_loss, v_region_loss, f_region_loss = 0.0, 0.0, 0.0
+            vf_loss, v_region_loss, f_region_loss = torch.FloatTensor([0.0]).cuda(), torch.FloatTensor([0.0]).cuda(), torch.FloatTensor([0.0]).cuda()
             # vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
             #                                                                        f_region_logits_list, vf_mask_gt,
             #                                                                        v_region_mask_gt, f_region_mask_gt)
