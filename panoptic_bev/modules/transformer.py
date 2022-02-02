@@ -315,8 +315,8 @@ class TransformerVF(nn.Module):
         vf_softmax = vf_logits.softmax(dim=1)
         v_att = vf_softmax[:, 0, :, :].unsqueeze(1)
         f_att = vf_softmax[:, 1, :, :].unsqueeze(1)
-        print(feat.size())
-        
+        ## print(feat.size())
+
 
         # Get the vertical and flat features by applying the generated attention masks to the frontal-view features
         feat_v = feat * v_att
@@ -327,15 +327,27 @@ class TransformerVF(nn.Module):
         # Perform the transformations on vertical and flat regions of the image plane feature map
         feat_v, v_region_logits = self.v_transform(feat_v, intrinsics)
         feat_f, f_region_logits = self.f_transform(feat_f, intrinsics)
+        print("feat_v1:")
+        print(feat_v.size())
+        print("feat_f1:")
+        print(feat_f.size())
 
         # Resize the feature maps to the output size
         # This takes into account the extreme cases where one dimension is a few pixels short
         feat_v = F.interpolate(feat_v, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
         feat_f = F.interpolate(feat_f, (self.Z_out, self.W_out), mode="bilinear", align_corners=True)
+        print("feat_v2:")
+        print(feat_v.size())
+        print("feat_f2:")
+        print(feat_f.size())
 
         # Merge the vertical and flat transforms
         feat_merged = self.merge_feat_vf(feat_v, feat_f)
+        print("feat_m1:")
+        print(feat_merged.size())
         feat_merged = self.dummy(self.ch_mapper_out(feat_merged))
+        print("feat_m2:")
+        print(feat_merged.size())
 
         del feat_v, feat_f
 
