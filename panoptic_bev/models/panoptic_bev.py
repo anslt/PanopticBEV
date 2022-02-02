@@ -156,8 +156,8 @@ class PanopticBevNet(nn.Module):
             elif self.dataset == "nuScenes":
                 vf_mask_gt = [front_msk]  # List to take care of the "rgb_cameras"
             v_region_mask_gt, f_region_mask_gt = self.make_region_mask(sem_gt)
-            torch.save(v_region_mask_gt.cpu(), "ex/v_gt.pt")
-            torch.save(f_region_mask_gt.cpu(), "ex/f_gt.pt")
+            ## torch.save(v_region_mask_gt.cpu(), "ex/v_gt.pt")
+            ## torch.save(f_region_mask_gt.cpu(), "ex/f_gt.pt")
             v_region_mask_gt = [v_region_mask_gt]
             f_region_mask_gt = [f_region_mask_gt]
         else:
@@ -177,12 +177,11 @@ class PanopticBevNet(nn.Module):
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
         ## for feat in ms_bev:
-        ##     print(feat.size())
-        if do_loss:
-            vf_loss, v_region_loss, f_region_loss = torch.FloatTensor([0.0]).cuda(), torch.FloatTensor([0.0]).cuda(), torch.FloatTensor([0.0]).cuda()
-            # vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
-            #                                                                        f_region_logits_list, vf_mask_gt,
-            #                                                                        v_region_mask_gt, f_region_mask_gt)
+        ##    print(feat.size())
+        if False:
+            vf_loss, v_region_loss, f_region_loss = self.transformer_algo.training(vf_logits_list, v_region_logits_list,
+                                                                                   f_region_logits_list, vf_mask_gt,
+                                                                                   v_region_mask_gt, f_region_mask_gt)
         elif do_prediction:
             vf_loss, v_region_loss, f_region_loss = None, None, None
         else:
@@ -244,9 +243,9 @@ class PanopticBevNet(nn.Module):
         loss['roi_bbx_loss'] = roi_bbx_loss
         loss['roi_msk_loss'] = roi_msk_loss
         loss["sem_loss"] = sem_loss
-        loss['vf_loss'] = vf_loss
-        loss['v_region_loss'] = v_region_loss
-        loss['f_region_loss'] = f_region_loss
+        # loss['vf_loss'] = vf_loss
+        # loss['v_region_loss'] = v_region_loss
+        # loss['f_region_loss'] = f_region_loss
         loss['po_loss'] = po_loss
 
         # PREDICTIONS
@@ -256,9 +255,9 @@ class PanopticBevNet(nn.Module):
         result['msk_pred'] = msk_pred
         result["sem_pred"] = sem_pred
         result['sem_logits'] = sem_logits
-        result['vf_logits'] = vf_logits_list
-        result['v_region_logits'] = v_region_logits_list
-        result['f_region_logits'] = f_region_logits_list
+        # result['vf_logits'] = vf_logits_list
+        # result['v_region_logits'] = v_region_logits_list
+        # result['f_region_logits'] = f_region_logits_list
         if po_pred is not None:
             result['po_pred'] = po_pred[0]
             result['po_class'] = po_pred[1]
