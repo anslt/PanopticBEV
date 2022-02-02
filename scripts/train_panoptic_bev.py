@@ -513,9 +513,9 @@ def validate(model, dataloader, **varargs):
         "sem_loss": AverageMeter(()),
         "po_loss": AverageMeter(()),
         "sem_conf": ConfusionMatrixMeter(num_classes),
-        "vf_loss": AverageMeter(()),
-        "v_region_loss": AverageMeter(()),
-        "f_region_loss": AverageMeter(())
+        # "vf_loss": AverageMeter(()),
+        # "v_region_loss": AverageMeter(()),
+        # "f_region_loss": AverageMeter(())
     }
 
     time_meters = {"data_time": AverageMeter(()),
@@ -714,9 +714,9 @@ def main(args):
         "sem_loss": AverageMeter((), momentum),
         "po_loss": AverageMeter((), momentum),
         "sem_conf": ConfusionMatrixMeter(train_dataloader.dataset.num_categories, momentum),
-        "vf_loss": AverageMeter((), momentum),
-        "v_region_loss": AverageMeter((), momentum),
-        "f_region_loss": AverageMeter((), momentum)
+        # "vf_loss": AverageMeter((), momentum),
+        # "v_region_loss": AverageMeter((), momentum),
+        # "f_region_loss": AverageMeter((), momentum)
     }
 
     if args.resume:

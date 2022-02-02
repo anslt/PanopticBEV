@@ -215,8 +215,7 @@ class PanopticBevNet(nn.Module):
         if do_loss:
             sem_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = self.sem_algo.training(self.sem_head, ms_bev,
                                                                                             sem_gt, bbx, valid_size,
-                                                                                            img_size, weights_msk,
-                                                                                            calib)
+                                                                                            img_size, weights_msk,                                                                                            calib)
         elif do_prediction:
             sem_pred, sem_logits, sem_feat = self.sem_algo.inference(self.sem_head, ms_bev, valid_size, img_size)
             sem_loss, sem_reg_loss, sem_conf_mat = None, None, None
