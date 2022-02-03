@@ -187,7 +187,6 @@ class PanopticBevNet(nn.Module):
         else:
             vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
 
-        print("Yes1")
         # RPN Part
         if do_loss:
             obj_loss, bbx_loss, proposals = self.rpn_algo.training(self.rpn_head, ms_bev, bbx, iscrowd, valid_size,
@@ -197,8 +196,6 @@ class PanopticBevNet(nn.Module):
             obj_loss, bbx_loss = None, None
         else:
             obj_loss, bbx_loss, proposals = None, None, None
-
-        print("Yes2")
 
         # ROI Part
         if do_loss:
@@ -214,7 +211,6 @@ class PanopticBevNet(nn.Module):
         else:
             bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
 
-        print("Yes3")
         # Segmentation Part
         if do_loss:
             sem_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = self.sem_algo.training(self.sem_head, ms_bev,
@@ -227,7 +223,6 @@ class PanopticBevNet(nn.Module):
         else:
             sem_loss, sem_reg_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = None, None, None, None, None, None
 
-        print("Yes4")
         # Panoptic Fusion. Fuse the semantic and instance predictions to generate a coherent output
         if do_prediction:
             # The first channel of po_pred contains the semantic labels
