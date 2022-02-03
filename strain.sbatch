@@ -2,8 +2,8 @@
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1,VRAM:24G
-#SBATCH --mem=32G
+#SBATCH --gres=gpu:2,VRAM:24G
+#SBATCH --mem=16G
 #SBATCH --time=3-15:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/storage/slurm/shil/nuscenes/logs/slurm-%j.out
