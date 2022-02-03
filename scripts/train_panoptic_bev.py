@@ -456,17 +456,23 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         losses["loss"].backward()
         optimizer.step()
 
+        print("Yes1")
+
         time_meters['batch_time'].update(torch.tensor(time.time() - batch_time))
 
         # Gather stats from all workers
         if not varargs['debug']:
             losses = all_reduce_losses(losses)
 
+        print("Yes2")
+
         sem_conf_stat = stats['sem_conf']
 
         # Gather the stats from all the workers
         if not varargs['debug']:
             distributed.all_reduce(sem_conf_stat, distributed.ReduceOp.SUM)
+
+        print("Yes3")
 
         # Update meters
         with torch.no_grad():
