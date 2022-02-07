@@ -142,25 +142,25 @@ class FlatTransformer(nn.Module):
 
         self.f_dummy = nn.Conv2d(f_2d_ch, f_2d_ch, 1, bias=False)
 
-        # self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
+        self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
 
     def forward(self, feat, intrinsics):
         feat = self.f_dummy(self.ch_mapper_in(feat))
 
         # Apply the IPM algorithm on the flat regions.
         # We compute the homography using the known camera intrinsics and kornia applies the homography
-        theta_ipm_list = []
-        for b_idx in range(feat.shape[0]):
-            theta_ipm_i = get_init_homography(intrinsics[b_idx].cpu().numpy(), self.extrinsics, self.bev_params,
-                                              self.img_scale, self.out_img_size_reverse).view(-1, 3, 3).to(feat.device)
-            ## print(self.img_scale)
-            ## print(self.out_img_size_reverse)
-            ## print()
-            ## torch.save(theta_ipm_i.cpu(), "ex/ipm_value_"+str(int(time.time() * 1000))+".pt")
-            theta_ipm_list.append(theta_ipm_i)
-        theta_ipm = torch.cat(theta_ipm_list, dim=0)
-        feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
-        feat_bev_ipm = torch.rot90(feat_bev_ipm, k=2, dims=[2, 3])
+        # theta_ipm_list = []
+        # for b_idx in range(feat.shape[0]):
+        #     theta_ipm_i = get_init_homography(intrinsics[b_idx].cpu().numpy(), self.extrinsics, self.bev_params,
+        #                                       self.img_scale, self.out_img_size_reverse).view(-1, 3, 3).to(feat.device)
+        #     ## print(self.img_scale)
+        #     ## print(self.out_img_size_reverse)
+        #     ## print()
+        #     ## torch.save(theta_ipm_i.cpu(), "ex/ipm_value_"+str(int(time.time() * 1000))+".pt")
+        #     theta_ipm_list.append(theta_ipm_i)
+        # theta_ipm = torch.cat(theta_ipm_list, dim=0)
+        # feat_bev_ipm = kornia.geometry.transform.warp_perspective(feat, theta_ipm, (int(self.Z_out), int(self.W_out)))
+        # feat_bev_ipm = torch.rot90(feat_bev_ipm, k=2, dims=[2, 3])
         ## torch.save(torch.rot90(feat_bev_ipm, k=1, dims=[2, 3]).cpu(), "ex/feat_rot90_" + str(int(time.time() * 1000)) + ".pt")
 
         # Find the regions where IPM goes wrong and apply the ECN to those regions
@@ -181,11 +181,11 @@ class FlatTransformer(nn.Module):
         #
         # # Apply the ErrorCorrectionModule to the regions where IPM made a mistake
         # feat_bev_ecm = self.ecm(feat_ecm_fv)
-        # feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
-        # feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
-        # feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
+        feat_bev_ecm = self.warper(feat, intrinsics)
+        feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
+        feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
 
-        f_feat = feat_bev_ipm
+        f_feat = feat_bev_ecm
         ## print(f_feat.size())
         f_feat = f_feat + self.post_process_residual(f_feat)
         f_logits = self.f_region_estimation(f_feat)
