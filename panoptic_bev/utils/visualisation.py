@@ -17,9 +17,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
     img_unpack, _ = pad_packed_images(img)
     if img_unpack.size(0) > 1:
-        img_unpack = [img_unpack[0].unsqueeze(0)]
-    else:
-        img_unpack = [img_unpack]
+        img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
@@ -32,7 +30,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         for img in img_unpack:
             vis.append((recover_image(img, varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
-        if bev_gt_unpack.shape[2] < img_unpack[0].shape[2]:
+        if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
             vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
@@ -50,9 +48,9 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
             error_map[:, bev_gt_unpack.squeeze(0) == 255] = 0
 
             # Row 1 --> GT and Pred
-            vis.append(torch.cat([vis_bev_gt, vis_bev_pred], dim=2))
+            vis.append(torch.cat([vis_bev_gt, vis_bev_pred], dim=1))
             # Row 2 --> Masked pred and Error map
-            vis.append(torch.cat([vis_bev_pred_masked, error_map], dim=2))
+            vis.append(torch.cat([vis_bev_pred_masked, error_map], dim=1))
 
         else:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
@@ -78,7 +76,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
             vis.append(error_map)
 
         # Append all the images together
-        vis = torch.cat(vis, dim=1)
+        vis = torch.cat(vis, dim=0)
         vis_list.append(vis)
 
     return vis_list
@@ -101,8 +99,8 @@ def get_panoptic_mask(panoptic_pred, num_stuff):
 
 
 def recover_image(img, rgb_mean, rgb_std):
-    z = img.new(rgb_std).view(-1, 1, 1)
-    print(z.size())
+    ## z = img.new(rgb_std).view(-1, 1, 1)
+    ## print(z.size())
     img = img * img.new(rgb_std).view(-1, 1, 1)
     img = img + img.new(rgb_mean).view(-1, 1, 1)
     return img
