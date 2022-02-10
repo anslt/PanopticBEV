@@ -22,7 +22,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0).cpu()
-        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0).cpu(
+        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0).cpu()
 
         # Visualise BEV as RGB
         for img in img_unpack:
