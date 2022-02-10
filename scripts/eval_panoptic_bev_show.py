@@ -445,7 +445,11 @@ def test(model, dataloader, **varargs):
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                           sample["iscrowd"])
 
-            imshow = visualise_bev(sample["img"], sample["bev_msk"], panoptic_pred_list, **varargs)
+            imshow = visualise_bev(sample["img"], sample["bev_msk"], panoptic_pred_list,
+                                   num_stuff=num_stuff,
+                                   rgb_mean=varargs["rgb_mean"],
+                                   rgb_std=varargs["rgb_std"],
+                                   dataset=varargs["dataset"])
             torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
@@ -582,7 +586,8 @@ def main(args):
                      rgb_std=config['dataloader'].getstruct('rgb_std'),
                      img_scale=config['dataloader'].getfloat('scale'),
                      debug=args.debug,
-                     saved_models_dir=saved_models_dir)
+                     saved_models_dir=saved_models_dir,
+                     dataset=args.test_dataset)
 
 if __name__ == "__main__":
     main(parser.parse_args())
