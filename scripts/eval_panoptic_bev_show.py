@@ -445,7 +445,7 @@ def test(model, dataloader, **varargs):
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                           sample["iscrowd"])
 
-            imshow = visualise_bev(sample["img"], sample["bev_msk"], panoptic_pred_list, varargs)
+            imshow = visualise_bev(sample["img"], sample["bev_msk"], panoptic_pred_list, **varargs)
             torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
