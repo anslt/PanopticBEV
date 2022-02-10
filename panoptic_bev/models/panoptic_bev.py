@@ -222,6 +222,14 @@ class PanopticBevNet(nn.Module):
         else:
             sem_loss, sem_reg_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = None, None, None, None, None, None
 
+        print(sem_logits.size())
+        print(rot_msk_logits.size())
+        print(bbx_pred.size())
+        print(cls_pred.size())
+        print(img_size)
+        print(bbx.size())
+        print(cat.size())
+        print(po_gt.size())
         # Panoptic Fusion. Fuse the semantic and instance predictions to generate a coherent output
         if do_prediction:
             # The first channel of po_pred contains the semantic labels
