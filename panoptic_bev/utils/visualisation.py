@@ -16,15 +16,25 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
     vis_list = []
 
     img_unpack, _ = pad_packed_images(img)
+    print(img_unpack.device)
+    print(bev_gt[0][0].device)
+    print(bev_gt[0][1].device)
+    print(bev_gt[0][3].device)
+    print(bev_pred[0]['po_pred'][0].device)
+    print(bev_pred[0]['po_pred'][1].device)
+    print(bev_pred[0]['po_pred'][3].device)
+
     if img_unpack.size(0) > 1:
         img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
         bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0)
-        ## print(img_unpack.size())
-        ## print(bev_gt_unpack.size())
-        ## print(bev_pred_unpack.size())
+
+        print(len(bev_gt))
+        print(img_unpack.shape)
+        print(bev_gt_unpack.shape)
+        print(bev_pred_unpack.shape)
 
         # Visualise BEV as RGB
         for img in img_unpack:
