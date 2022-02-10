@@ -445,7 +445,7 @@ def test(model, dataloader, **varargs):
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                           sample["iscrowd"])
 
-            imshow = visualise_bev(sample["img"], sample["bev_msk"], panoptic_pred_list,
+            imshow = visualise_bev([sample["img"][0]], [panoptic_pred_list[0]["seg_gt"],panoptic_pred_list[0]["cat_gt"]], [panoptic_pred_list[0]],
                                    num_stuff=num_stuff,
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
