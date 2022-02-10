@@ -21,16 +21,16 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
-        bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
-        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0)
+        bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0).cpu()
+        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0).cpu(
 
         # Visualise BEV as RGB
         for img in img_unpack:
             vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
         if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
-            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset']).cpu()
-            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset']).cpu()
+            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
+            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset']))
 
             # Add the error map and the masked output. The error map is only a semantic error map.
             vis_bev_pred_masked = vis_bev_pred.clone()
