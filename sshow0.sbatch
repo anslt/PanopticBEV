@@ -13,13 +13,13 @@ module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
 python3 -m torch.distributed.launch --master_port=29600 scripts/eval_panoptic_bev_show.py \
-     --run_name=nuscenes_`date +"%Y_%m_%d_%H_%M_%S"` \
+     --run_name=nuscenes_show`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=/usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
     --dataset_root_dir=/usr/stud/shil/storage/slurm/shil/nuscenes/trainval \
     --mode=test \
     --test_dataset=nuScenes \
-    --config=nuscenes0.ini \
+    --config=nuscenes_show.ini \
     --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV/experiments/bev_train_nuscenes_ipm_2022_02_03_16_42_44/saved_models/model_best.pth
 
 
