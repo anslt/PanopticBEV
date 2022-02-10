@@ -30,7 +30,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
         if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
-            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset']))
+            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
             # Add the error map and the masked output. The error map is only a semantic error map.
             vis_bev_pred_masked = vis_bev_pred.clone()
