@@ -17,7 +17,9 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
     img_unpack, _ = pad_packed_images(img)
     if img_unpack.size(0) > 1:
-        img_unpack = img_unpack[0].unsqueeze(0)
+        img_unpack = [img_unpack[0].unsqueeze(0)]
+    else:
+        img_unpack = [img_unpack]
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
@@ -99,6 +101,8 @@ def get_panoptic_mask(panoptic_pred, num_stuff):
 
 
 def recover_image(img, rgb_mean, rgb_std):
+    z = img.new(rgb_std).view(-1, 1, 1)
+    print(z.size())
     img = img * img.new(rgb_std).view(-1, 1, 1)
     img = img + img.new(rgb_mean).view(-1, 1, 1)
     return img
