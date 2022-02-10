@@ -16,14 +16,20 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
     vis_list = []
 
     img_unpack, _ = pad_packed_images(img)
+
+    if img_unpack.size(0) > 1:
+        img_unpack = img_unpack[0].unsqueeze(0)
+    img_unpack = torch.nn.functional.interpolate(img_unpack, scale_factor = 2, mode = 'bilinear')
+
     for b in range(len(bev_gt)):
         vis = []
-        bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
-        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0)
+        bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0).cpu()
+        bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0).cpu()
 
         # Visualise BEV as RGB
         for img in img_unpack:
-            vis.append((recover_image(img, varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
+            vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
+
 
         if bev_gt_unpack.shape[2] < img_unpack[0].shape[2]:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
@@ -94,6 +100,8 @@ def get_panoptic_mask(panoptic_pred, num_stuff):
 
 
 def recover_image(img, rgb_mean, rgb_std):
+    ## z = img.new(rgb_std).view(-1, 1, 1)
+    ## print(z.size())
     img = img * img.new(rgb_std).view(-1, 1, 1)
     img = img + img.new(rgb_mean).view(-1, 1, 1)
     return img
