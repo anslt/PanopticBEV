@@ -20,9 +20,9 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
         bev_pred_unpack = get_panoptic_mask(bev_pred[b]['po_pred'], varargs['num_stuff']).unsqueeze(0)
-        print(img_unpack.size())
-        print(bev_gt_unpack.size())
-        print(bev_pred_unpack.size())
+        ## print(img_unpack.size())
+        ## print(bev_gt_unpack.size())
+        ## print(bev_pred_unpack.size())
 
         # Visualise BEV as RGB
         for img in img_unpack:
