@@ -19,6 +19,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
     if img_unpack.size(0) > 1:
         img_unpack = img_unpack[0].unsqueeze(0)
+    img_unpack = torch.nn.functional.interpolate(img_unpack, scale_factor = 2, mode = 'bilinear')
+    print(img_unpack.size())
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0).cpu()
@@ -28,9 +30,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         for img in img_unpack:
             vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
-        print(bev_gt_unpack.shape[1])
-        print(img_unpack[0].shape[1])
-        if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
+
+        if bev_gt_unpack.shape[2] < img_unpack[0].shape[2]:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
             vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
@@ -48,9 +49,9 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
             error_map[:, bev_gt_unpack.squeeze(0) == 255] = 0
 
             # Row 1 --> GT and Pred
-            vis.append(torch.cat([vis_bev_gt, vis_bev_pred], dim=1))
+            vis.append(torch.cat([vis_bev_gt, vis_bev_pred], dim=2))
             # Row 2 --> Masked pred and Error map
-            vis.append(torch.cat([vis_bev_pred_masked, error_map], dim=1))
+            vis.append(torch.cat([vis_bev_pred_masked, error_map], dim=2))
 
         else:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
@@ -76,7 +77,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
             vis.append(error_map)
 
         # Append all the images together
-        vis = torch.cat(vis, dim=0)
+        vis = torch.cat(vis, dim=1)
         vis_list.append(vis)
 
     return vis_list
