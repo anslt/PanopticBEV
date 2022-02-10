@@ -20,7 +20,7 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
     if img_unpack.size(0) > 1:
         img_unpack = img_unpack[0].unsqueeze(0)
     img_unpack = torch.nn.functional.interpolate(img_unpack, scale_factor = 2, mode = 'bilinear')
-    print(img_unpack.size())
+
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0).cpu()

@@ -399,7 +399,7 @@ def test(model, dataloader, **varargs):
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
-        if it % 100 != 0:
+        if (it + 1) % 250 != 0:
             continue
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
@@ -450,7 +450,7 @@ def test(model, dataloader, **varargs):
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
-            print(imshow.size())
+
             torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
