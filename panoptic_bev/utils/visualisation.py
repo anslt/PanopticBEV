@@ -28,6 +28,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         for img in img_unpack:
             vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
+        print(bev_gt_unpack.shape[1])
+        print(img_unpack[0].shape[1])
         if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
             vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
             vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
