@@ -15,7 +15,9 @@ THING_COLOURS = [(56, 60, 200), (168, 240, 104), (24, 20, 140), (41, 102, 116),
 def visualise_bev(img, bev_gt, bev_pred, **varargs):
     vis_list = []
 
-    if img_unpack.shape[0] > 1:
+    img_unpack, _ = pad_packed_images(img)
+
+    if img_unpack.size(0) > 1:
         img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
@@ -24,11 +26,11 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
         # Visualise BEV as RGB
         for img in img_unpack:
-            vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
+            vis.append((recover_image(img, varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
         if bev_gt_unpack.shape[1] < img_unpack[0].shape[1]:
-            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset']).cpu()
-            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset']).cpu()
+            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
+            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
             # Add the error map and the masked output. The error map is only a semantic error map.
             vis_bev_pred_masked = vis_bev_pred.clone()
