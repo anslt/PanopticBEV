@@ -15,7 +15,7 @@ THING_COLOURS = [(56, 60, 200), (168, 240, 104), (24, 20, 140), (41, 102, 116),
 def visualise_bev(img, bev_gt, bev_pred, **varargs):
     vis_list = []
 
-    if img_unpack.size(0) > 1:
+    if img_unpack.shape[0] > 1:
         img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
