@@ -444,14 +444,13 @@ def test(model, dataloader, **varargs):
             # Do the post-processing
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                           sample["iscrowd"])
-            print(sample['bev_msk'][0].size())
-            print(sample['cat'][0].size())
-            print(sample['iscrowd'][0].size())
-            imshow = visualise_bev(sample["img"][0], [(sample['bev_msk'][0],sample['cat'][0],None,sample['iscrowd'][0])], [panoptic_pred_list[0]],
+
+            imshow = visualise_bev(sample["img"], [(sample['bev_msk'][0].squeeze(0),sample['cat'][0],None,sample['iscrowd'][0])], [panoptic_pred_list[0]],
                                    num_stuff=num_stuff,
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
+            print(imshow.size())
             torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 

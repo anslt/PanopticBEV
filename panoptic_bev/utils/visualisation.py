@@ -16,6 +16,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
     vis_list = []
 
     img_unpack, _ = pad_packed_images(img)
+    if img_unpack.size(0) > 1:
+        img_unpack = img_unpack[0].unsqueeze(0)
     for b in range(len(bev_gt)):
         vis = []
         bev_gt_unpack = get_panoptic_mask(bev_gt[b], varargs['num_stuff']).unsqueeze(0)
