@@ -19,7 +19,7 @@ python3 -m torch.distributed.launch --master_port=29600 scripts/eval_panoptic_be
     --dataset_root_dir=/usr/stud/shil/storage/slurm/shil/nuscenes/trainval \
     --mode=test \
     --test_dataset=nuScenes \
-    --config=nuscenes0.ini \
+    --config=nuscenes_show.ini \
     --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_mine/PanopticBEV/experiments/bev_train_nuscenes_2022_02_06_02_17_36/saved_models/model_best.pth
 
 
