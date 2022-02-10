@@ -399,8 +399,7 @@ def test(model, dataloader, **varargs):
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
-        if (it + 1) % 100 != 0:
-            continue
+
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
         idxs = sample['idx']
