@@ -20,6 +20,6 @@ python3 -m torch.distributed.launch --master_port=29601 scripts/eval_panoptic_be
     --mode=test \
     --test_dataset=nuScenes \
     --config=nuscenes0.ini \
-    --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV/experiments/bev_train_nuscenes_ipm_2022_02_03_16_42_44/saved_models/model_latest.pth
+    --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV/experiments/bev_train_nuscenes_ipm_2022_02_03_16_42_44/saved_models/model_best.pth
 
 
