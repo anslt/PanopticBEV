@@ -644,7 +644,7 @@ def main(args):
         distributed.init_process_group(backend='nccl', init_method='env://')
         device_id, device = args.local_rank, torch.device(args.local_rank)
         rank, world_size = distributed.get_rank(), distributed.get_world_size()
-        ## print(torch.cuda.device_count())
+        print(distributed.group.WORLD)
     else:
         rank = 0
         world_size = 1
