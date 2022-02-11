@@ -20,5 +20,5 @@ python3 -m torch.distributed.launch --master_port=29502 scripts/train_panoptic_b
     --mode=train \
     --train_dataset=nuScenes \
     --val_dataset=nuScenes \
-    --config=nuscenes.ini
+    --config=nuscenes0.ini
 
