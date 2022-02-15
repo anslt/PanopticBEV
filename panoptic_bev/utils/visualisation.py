@@ -163,6 +163,7 @@ def save_panoptic_output(sample, sample_category, save_tuple, **varargs):
         po_mask = sample[0].unsqueeze(0)
 
     # Save the raw version of the mask
+    print(po_mask.size())
     po_mask_orig = po_mask.permute(1, 2, 0).cpu().numpy().astype(np.uint16)
     cv2.imwrite(img_name, po_mask_orig)
 
