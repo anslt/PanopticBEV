@@ -164,7 +164,8 @@ def save_panoptic_output(sample, sample_category, save_tuple, **varargs):
 
     # Save the raw version of the mask
     po_mask = po_mask.squeeze(0) # add new line
-    po_mask_orig = po_mask.permute(1, 2, 0).cpu().numpy().astype(np.uint16)
+    print(po_mask)
+    po_mask_orig = po_mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8)
     cv2.imwrite(img_name, po_mask_orig)
 
     # Get the RGB image of the po_pred
