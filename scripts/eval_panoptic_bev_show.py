@@ -449,7 +449,7 @@ def test(model, dataloader, **varargs):
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
-            save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"], idx[0]))
+            save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"], idxs[0]))
             ## torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
