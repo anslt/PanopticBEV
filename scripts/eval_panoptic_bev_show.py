@@ -37,7 +37,7 @@ from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_sna
 from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
-from panoptic_bev.utils.visualisation import visualise_bev
+from panoptic_bev.utils.visualisation import visualise_bev, save_panoptic_output
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Evaluation Script")
@@ -449,7 +449,8 @@ def test(model, dataloader, **varargs):
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
-
+            # save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"],sample["idx"][0]))
+            print(sample["idx"][0])
             torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
