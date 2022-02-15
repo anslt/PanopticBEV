@@ -322,7 +322,7 @@ class BEVNuScenesDataset(data.Dataset):
         if vf_msk is not None:
             for m in vf_msk:
                 m.close()
-
+        print(idx)
         rec["idx"] = idx
         rec["size"] = size
         return rec
