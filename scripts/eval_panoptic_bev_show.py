@@ -449,9 +449,8 @@ def test(model, dataloader, **varargs):
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
-            # save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"],sample["idx"][0]))
-            print(sample)
-            torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
+            save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"], idx[0]))
+            ## torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
             # Get the evaluation metrics
