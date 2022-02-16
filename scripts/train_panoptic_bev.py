@@ -154,7 +154,7 @@ def make_dataloader(args, config, rank, world_size):
                                       split_name=dl_config['train_set'], transform=train_tf)
 
     if not args.debug:
-        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, True)
+        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, is_train=True)
         train_dl = torch.utils.data.DataLoader(train_db,
                                                batch_sampler=train_sampler,
                                                collate_fn=iss_collate_fn,
@@ -183,7 +183,7 @@ def make_dataloader(args, config, rank, world_size):
                                     split_name=dl_config['val_set'], transform=val_tf)
 
     if not args.debug:
-        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, False)
+        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
         val_dl = torch.utils.data.DataLoader(val_db,
                                              batch_sampler=val_sampler,
                                              collate_fn=iss_collate_fn,
@@ -478,7 +478,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         del losses, stats, sample
 
         # Log to tensorboard and console
-        # print(it)
+        ## print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
@@ -513,9 +513,9 @@ def validate(model, dataloader, **varargs):
         "sem_loss": AverageMeter(()),
         "po_loss": AverageMeter(()),
         "sem_conf": ConfusionMatrixMeter(num_classes),
-        # "vf_loss": AverageMeter(()),
-        # "v_region_loss": AverageMeter(()),
-        # "f_region_loss": AverageMeter(())
+        "vf_loss": AverageMeter(()),
+        "v_region_loss": AverageMeter(()),
+        "f_region_loss": AverageMeter(())
     }
 
     time_meters = {"data_time": AverageMeter(()),
@@ -644,7 +644,6 @@ def main(args):
         distributed.init_process_group(backend='nccl', init_method='env://')
         device_id, device = args.local_rank, torch.device(args.local_rank)
         rank, world_size = distributed.get_rank(), distributed.get_world_size()
-        torch.cuda.set_device(device_id)
     else:
         rank = 0
         world_size = 1
@@ -714,9 +713,9 @@ def main(args):
         "sem_loss": AverageMeter((), momentum),
         "po_loss": AverageMeter((), momentum),
         "sem_conf": ConfusionMatrixMeter(train_dataloader.dataset.num_categories, momentum),
-        # "vf_loss": AverageMeter((), momentum),
-        # "v_region_loss": AverageMeter((), momentum),
-        # "f_region_loss": AverageMeter((), momentum)
+        "vf_loss": AverageMeter((), momentum),
+        "v_region_loss": AverageMeter((), momentum),
+        "f_region_loss": AverageMeter((), momentum)
     }
 
     if args.resume:
