@@ -44,8 +44,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
             vis_bev_pred_masked = vis_bev_pred.clone()
             vis_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
 
-            semantic_bev_pred = visualise_panoptic_mask_trainid(semantic_pred_unpack, varargs['dataset'])
-            semantic_bev_gt = visualise_panoptic_mask_trainid(semantic_gt_unpack, varargs['dataset'])
+            semantic_bev_pred = visualise_semantic_mask_trainid(semantic_pred_unpack, varargs['dataset'])
+            semantic_bev_gt = visualise_semantic_mask_trainid(semantic_gt_unpack, varargs['dataset'])
 
             semantic_bev_pred_masked = semantic_bev_pred.clone()
             semantic_bev_pred_masked[:, semantic_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
@@ -171,6 +171,33 @@ def visualise_panoptic_mask_trainid(bev_panoptic, dataset):
             color_idx = random.choice(colors)
             colors.remove(color_idx)
             po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(THING_COLOURS[color_idx],
+                                                                              dtype=torch.int32).unsqueeze(1).to(bev_panoptic.device)
+
+    return po_vis
+
+
+def visualise_semantic_mask_trainid(bev_panoptic, dataset):
+    if dataset == "Kitti360":
+        stuff_colours_trainid = {label.trainId: label.color for label in cs_labels}
+    elif dataset == "nuScenes":
+        stuff_colours_trainid = {label.trainId: label.color for label in nuscenes_labels}
+    print(stuff_colours_trainid)
+
+    po_vis = torch.zeros((3, bev_panoptic.shape[1], bev_panoptic.shape[2]), dtype=torch.int32).to(bev_panoptic.device)
+
+    # Colour the stuff
+    stuff_mask = bev_panoptic <= 1000
+    classes = torch.unique(bev_panoptic[stuff_mask])
+    for stuff_label in classes:
+        po_vis[:, (bev_panoptic == stuff_label).squeeze()] = torch.tensor(stuff_colours_trainid[stuff_label.item()],
+                                                                          dtype=torch.int32).unsqueeze(1).to(bev_panoptic.device)
+
+    # Colour the things
+    thing_mask = (bev_panoptic > 1000)
+    if torch.sum(thing_mask) > 0:
+        classes = torch.unique(bev_panoptic[thing_mask] // 1000)
+        for thing_label in classes:
+            po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(stuff_colours_trainid[stuff_label.item()],
                                                                               dtype=torch.int32).unsqueeze(1).to(bev_panoptic.device)
 
     return po_vis
