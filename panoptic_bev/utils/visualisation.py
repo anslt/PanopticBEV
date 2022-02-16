@@ -181,7 +181,7 @@ def visualise_semantic_mask_trainid(bev_panoptic, dataset):
         stuff_colours_trainid = {label.trainId: label.color for label in cs_labels}
     elif dataset == "nuScenes":
         stuff_colours_trainid = {label.trainId: label.color for label in nuscenes_labels}
-    print(stuff_colours_trainid)
+    #print(stuff_colours_trainid)
 
     po_vis = torch.zeros((3, bev_panoptic.shape[1], bev_panoptic.shape[2]), dtype=torch.int32).to(bev_panoptic.device)
 
@@ -197,7 +197,7 @@ def visualise_semantic_mask_trainid(bev_panoptic, dataset):
     if torch.sum(thing_mask) > 0:
         classes = torch.unique(bev_panoptic[thing_mask] // 1000)
         for thing_label in classes:
-            po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(stuff_colours_trainid[stuff_label.item()],
+            po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(stuff_colours_trainid[thing_label.item()],
                                                                               dtype=torch.int32).unsqueeze(1).to(bev_panoptic.device)
 
     return po_vis
