@@ -196,7 +196,7 @@ def visualise_semantic_mask_trainid(bev_panoptic, dataset):
     thing_mask = (bev_panoptic > 1000)
     if torch.sum(thing_mask) > 0:
         classes = torch.unique(bev_panoptic[thing_mask] // 1000)
-        print(classes)
+        # print(classes)
         bev_panoptic = bev_panoptic // 1000
         for thing_label in classes:
             po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(stuff_colours_trainid[thing_label.item()],
