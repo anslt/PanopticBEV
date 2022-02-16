@@ -168,7 +168,7 @@ def visualise_panoptic_mask_trainid(bev_panoptic, dataset):
         for thing_label in torch.unique(bev_panoptic[thing_mask]):
             if len(colors) == 0:
                 colors = [list(range(len(THING_COLOURS)))]
-            color_idx = random.choice(THING_COLOURS)
+            color_idx = random.choice(colors)
             colors.remove(color_idx)
             po_vis[:, (bev_panoptic == thing_label).squeeze()] = torch.tensor(THING_COLOURS[color_idx],
                                                                               dtype=torch.int32).unsqueeze(1).to(bev_panoptic.device)
