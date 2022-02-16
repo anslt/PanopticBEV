@@ -58,8 +58,8 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
 
             instance_bev_pred = vis_bev_pred.clone()
             instance_bev_gt = vis_bev_gt.clone()
-            instance_bev_pred[:, bev_pred_sem < 1000] = 0
-            instance_bev_gt[:, bev_gt_sem < 1000] = 0
+            instance_bev_pred[:, bev_pred_unpack.squeeze(0) < 1000] = 0
+            instance_bev_gt[:, bev_gt_unpack.squeeze(0) < 1000] = 0
 
             instance_bev_pred_masked = instance_bev_pred.clone()
             instance_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
