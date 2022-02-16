@@ -269,7 +269,7 @@ def save_panoptic_output(sample, sample_category, save_tuple, **varargs):
     cv2.imwrite(img_name[:-4] + "_pano_masked_pred.png", pano_masked_pred)
     cv2.imwrite(img_name[:-4] + "_pano_gt.png", pano_gt)
 
-    cv2.imwrite(img_name[:-4] + "_default.png", np.ones_like(fv_img) * 255)
+    # cv2.imwrite(img_name[:-4] + "_default.png", np.ones_like(fv_img) * 255)
 
     # Get the RGB image of the po_pred
     # po_mask_rgb = visualise_panoptic_mask_trainid(po_mask, varargs['dataset'])
