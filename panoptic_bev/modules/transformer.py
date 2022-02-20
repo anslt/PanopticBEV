@@ -124,7 +124,7 @@ class FlatTransformer(nn.Module):
                                            norm_act(in_ch))
 
         # Account for the errors made by the IPM part of the flat transformer
-        # self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
+        self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
 
         self.f_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
                                                  norm_act(f_2d_ch),
@@ -142,7 +142,7 @@ class FlatTransformer(nn.Module):
 
         self.f_dummy = nn.Conv2d(f_2d_ch, f_2d_ch, 1, bias=False)
 
-        # self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
+        self.warper = Perspective2OrthographicWarper(extents, img_scale, resolution)
 
     def forward(self, feat, intrinsics):
         feat = self.f_dummy(self.ch_mapper_in(feat))
@@ -177,15 +177,16 @@ class FlatTransformer(nn.Module):
         # ignored_by_ipm_mask = (ipm_incorrect_fv == 0)
         # feat = feat * ignored_by_ipm_mask
         # feat_ecm_fv = feat_ecm_fv + feat
+        feat_ecm_fv = feat
         # del feat
         #
         # # Apply the ErrorCorrectionModule to the regions where IPM made a mistake
-        # feat_bev_ecm = self.ecm(feat_ecm_fv)
-        # feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
-        # feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
-        # feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
+        feat_bev_ecm = self.ecm(feat_ecm_fv)
+        feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
+        feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
+        feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
 
-        f_feat = feat_bev_ipm
+        f_feat = feat_bev_ipm + feat_bev_ecm
         ## print(f_feat.size())
         f_feat = f_feat + self.post_process_residual(f_feat)
         f_logits = self.f_region_estimation(f_feat)
