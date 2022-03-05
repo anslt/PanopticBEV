@@ -154,7 +154,7 @@ def make_dataloader(args, config, rank, world_size):
                                       split_name=dl_config['train_set'], transform=train_tf)
 
     if not args.debug:
-        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, True)
+        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, is_train=True)
         train_dl = torch.utils.data.DataLoader(train_db,
                                                batch_sampler=train_sampler,
                                                collate_fn=iss_collate_fn,
@@ -183,7 +183,7 @@ def make_dataloader(args, config, rank, world_size):
                                     split_name=dl_config['val_set'], transform=val_tf)
 
     if not args.debug:
-        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, False)
+        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
         val_dl = torch.utils.data.DataLoader(val_db,
                                              batch_sampler=val_sampler,
                                              collate_fn=iss_collate_fn,

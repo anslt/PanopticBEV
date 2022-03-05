@@ -37,7 +37,7 @@ from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_sna
 from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
-from panoptic_bev.utils.visualisation import visualise_bev
+from panoptic_bev.utils.visualisation import visualise_bev, save_panoptic_output
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Evaluation Script")
@@ -146,7 +146,7 @@ def make_dataloader(args, config, rank, world_size):
                                     split_name=dl_config['show_set'], transform=test_tf)
 
     if not args.debug:
-        test_sampler = DistributedARBatchSampler(test_db, dl_config.getint("val_batch_size"), world_size, rank, False)
+        test_sampler = DistributedARBatchSampler(test_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
         test_dl = torch.utils.data.DataLoader(test_db,
                                              batch_sampler=test_sampler,
                                              collate_fn=iss_collate_fn,
@@ -449,8 +449,8 @@ def test(model, dataloader, **varargs):
                                    rgb_mean=varargs["rgb_mean"],
                                    rgb_std=varargs["rgb_std"],
                                    dataset=varargs["dataset"])
-
-            torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
+            save_panoptic_output(imshow, "FRONT", (varargs["saved_models_dir"], "%04d" % it))
+            ## torch.save(imshow[0],os.path.join(varargs["saved_models_dir"],str(it+1)+".pt"))
 
 
             # Get the evaluation metrics
