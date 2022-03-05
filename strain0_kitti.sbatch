@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1,VRAM:48G
 #SBATCH --mem=16G
-#SBATCH --time=5-0:00:00
+#SBATCH --time=7-0:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/storage/slurm/shil/kitti360/logs/slurm-%j.out
 #SBATCH --error=/storage/slurm/shil/kitti360/logs/slurm-%j.out
