@@ -1,5 +1,6 @@
 import torch
 import torch.distributed as distributed
+import numpy as np
 
 from panoptic_bev.utils.sequence import pad_packed_images
 
@@ -104,6 +105,7 @@ def confusion_matrix(gt, pred):
 
 def compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer, conf_mat, **varargs):
 
+    panoptic_per_image = [] # add
     for i, po_dict in enumerate(panoptic_pred_list):
         sem_gt = po_dict['sem_gt']
         msk_gt = po_dict['msk_gt']
@@ -111,14 +113,19 @@ def compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer, conf_mat,
         idx = po_dict['idx']
         panoptic_pred = po_dict['po_pred']
 
-        panoptic_buffer += torch.stack(panoptic_stats(msk_gt, cat_gt, panoptic_pred, varargs['num_classes'],
+        temp = torch.stack(panoptic_stats(msk_gt, cat_gt, panoptic_pred, varargs['num_classes'],
                                                       varargs['num_stuff']), dim=0)
+        panoptic_buffer += temp
+        panoptic_per_image.append(temp) # add
 
         # Calculate confusion matrix on panoptic output
         sem_pred = panoptic_pred[1][panoptic_pred[0]]
 
         conf_mat_i = confusion_matrix(sem_gt.cpu(), sem_pred)
         conf_mat += conf_mat_i.to(conf_mat)
+
+    panoptic_per_image = torch.stack(panoptic_per_image, dim=0).cpu().numpy() # add
+    np.save("result.npy",panoptic_per_image) # add
 
     return panoptic_buffer, conf_mat
 
@@ -129,6 +136,9 @@ def get_panoptic_scores(panoptic_buffer, scores_out, device, num_stuff, debug):
     if not debug:
         distributed.all_reduce(panoptic_buffer, distributed.ReduceOp.SUM)
 
+    print("TP: ", panoptic_buffer[1].cpu().numpy()) # add
+    print("FP: ", panoptic_buffer[2].cpu().numpy()) # add
+    print("FN: ", panoptic_buffer[3].cpu().numpy()) # add
     # From buffers to scores
     denom = panoptic_buffer[1] + 0.5 * (panoptic_buffer[2] + panoptic_buffer[3])
     denom[denom == 0] = 1.
