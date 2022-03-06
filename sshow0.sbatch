@@ -12,7 +12,7 @@
 module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
-python3 -m torch.distributed.launch --master_port=29600 scripts/eval_panoptic_bev_show.py \
+python3 -m torch.distributed.launch --master_port=29801 scripts/eval_panoptic_bev_show.py \
     --run_name=nuscenes_show_`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=/usr/stud/shil/storage/user/shil/PanopticBEV_mine/PanopticBEV \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
