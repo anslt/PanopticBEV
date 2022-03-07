@@ -21,6 +21,6 @@ python3 -m torch.distributed.launch --master_port=29504 scripts/train_panoptic_b
     --train_dataset=Kitti360 \
     --val_dataset=Kitti360 \
     --config=kitti0.ini \
-    --resume=usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV/experiments/bev_train_kitti360_ipm_2022_03_05_02_08_48/saved_models/model_latest.pth
+    --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_ipm/PanopticBEV/experiments/bev_train_kitti360_ipm_2022_03_05_02_08_48/saved_models/model_latest.pth
 
 
