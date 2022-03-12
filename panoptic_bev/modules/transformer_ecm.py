@@ -1,4 +1,3 @@
-"""
 import torch.nn as nn
 from torch.nn import functional as F
 import torch
@@ -349,4 +348,3 @@ class TransformerVF(nn.Module):
         v_region_logits = 0
 
         return feat_merged, vf_logits, v_region_logits, f_region_logits
-"""
