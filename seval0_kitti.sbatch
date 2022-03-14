@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:1,VRAM:24G
-#SBATCH --mem=32G
+#SBATCH --mem=64G
 #SBATCH --time=5-0:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/storage/slurm/shil/kitti360/logs/slurm-%j.out
