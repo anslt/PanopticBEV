@@ -2,24 +2,24 @@
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1,VRAM:48G
-#SBATCH --mem=16G
+#SBATCH --gres=gpu:1,VRAM:24G
+#SBATCH --mem=64G
 #SBATCH --time=5-0:00:00
 #SBATCH --mail-type=ALL
-#SBATCH --output=/storage/slurm/shil/nuscenes/show_logs/slurm-%j.out
-#SBATCH --error=/storage/slurm/shil/nuscenes/show_logs/slurm-%j.out
+#SBATCH --output=/storage/slurm/shil/nuscenes/pon_logs/slurm-%j.out
+#SBATCH --error=/storage/slurm/shil/nuscenes/pon_logs/slurm-%j.out
 
 module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
-python3 -m torch.distributed.launch --master_port=29751 scripts/eval_panoptic_bev_show.py \
-    --run_name=nuscenes_pon_show_`date +"%Y_%m_%d_%H_%M_%S"` \
-    --project_root_dir=$(pwd)  \
+python3 -m torch.distributed.launch --master_port=29752 scripts/eval_panoptic_bev.py \
+    --run_name=nuscenes_`date +"%Y_%m_%d_%H_%M_%S"` \
+    --project_root_dir=$(pwd) \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
     --dataset_root_dir=/usr/stud/shil/storage/slurm/shil/nuscenes/trainval \
     --mode=test \
     --test_dataset=nuScenes \
-    --config=nuscenes_show.ini \
+    --config=nuscenes_new.ini \
     --resume=/usr/stud/shil/storage/user/shil/PanopticBEV_pon/PanopticBEV/experiments/bev_train_nuscenes_pon_2022_02_11_02_57_25/saved_models/model_best.pth
 
 
