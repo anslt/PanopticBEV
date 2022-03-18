@@ -2,8 +2,8 @@
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1,VRAM:48G
-#SBATCH --mem=16G
+#SBATCH --gres=gpu:2,VRAM:48G
+#SBATCH --mem=32G
 #SBATCH --time=4-0:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/storage/slurm/shil/nuscenes/ipm_logs/slurm-%j.out
@@ -12,7 +12,7 @@
 module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
-python3 -m torch.distributed.launch --master_port=29501 scripts/train_panoptic_bev.py \
+python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=29620 scripts/train_panoptic_bev.py \
     --run_name=nuscenes_ipm_`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=$(pwd) \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
