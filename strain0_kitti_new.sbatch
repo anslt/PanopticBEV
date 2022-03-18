@@ -12,7 +12,7 @@
 module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0 \
-python3 -m torch.distributed.launch --master_port=29501 scripts/train_panoptic_bev.py \
+python3 -m torch.distributed.launch --master_port=29502 scripts/train_panoptic_bev.py \
     --run_name=kitti360_`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=$(pwd) \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev \
@@ -20,5 +20,5 @@ python3 -m torch.distributed.launch --master_port=29501 scripts/train_panoptic_b
     --mode=train \
     --train_dataset=Kitti360 \
     --val_dataset=Kitti360 \
-    --config=kitti0.ini
+    --config=kitti_new.ini
 

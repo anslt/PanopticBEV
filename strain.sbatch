@@ -15,7 +15,7 @@ CUDA_VISIBLE_DEVICES=0,1 \
 CUDA_LAUNCH_BLOCKING=1 \
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=29520 scripts/train_panoptic_bev.py \
     --run_name=nuscenes_`date +"%Y_%m_%d_%H_%M_%S"` \
-    --project_root_dir=/usr/stud/shil/storage/user/shil/PanopticBEV_mine/PanopticBEV \
+    --project_root_dir=$(pwd) \
     --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
     --dataset_root_dir=/usr/stud/shil/storage/slurm/shil/nuscenes/trainval \
     --mode=train \
