@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=5
 #SBATCH --gres=gpu:1,VRAM:48G
 #SBATCH --mem=16G
-#SBATCH --time=4-0:00:00
+#SBATCH --time=5-0:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --output=/storage/slurm/shil/kitti360/ipm_logs/slurm-%j.out
 #SBATCH --error=/storage/slurm/shil/kitti360/ipm_logs/slurm-%j.out
