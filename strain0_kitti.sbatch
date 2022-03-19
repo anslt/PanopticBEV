@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=5
 #SBATCH --gres=gpu:1,VRAM:48G
 #SBATCH --mem=16G
 #SBATCH --time=5-0:00:00
