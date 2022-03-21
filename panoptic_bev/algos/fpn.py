@@ -397,6 +397,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         return cls_gt_list, bbx_gt_list, msk_gt_list
 
     def training(self, head, x, proposals, bbx, cat, iscrowd, ids, msk, img_size):
+        print(len(x))
         x = x[self.min_level:self.min_level + self.levels]
 
         try:
