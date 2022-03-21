@@ -1,5 +1,5 @@
 import torch
-from inplace_abn import active_group, set_active_group
+# from inplace_abn import active_group, set_active_group
 
 from panoptic_bev.utils.bbx import shift_boxes
 from panoptic_bev.utils.misc import Empty
@@ -204,13 +204,13 @@ class DetectionAlgoFPN(DetectionAlgo):
                 raise Empty
 
             # Run head
-            set_active_group(head, active_group(True))
+            # set_active_group(head, active_group(True))
             proposals, proposals_idx = proposals.contiguous
             cls_logits, bbx_logits = self._head(head, x, proposals, proposals_idx, img_size)
             # Calculate loss
             cls_loss, bbx_loss = self.loss(cls_logits, bbx_logits, cls_lbl, bbx_lbl)
         except Empty:
-            active_group(False)
+            # active_group(False)
             cls_loss = bbx_loss = sum(x_i.sum() for x_i in x) * 0
 
         return cls_loss, bbx_loss
@@ -413,7 +413,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
             # Run head
             if not self.debug:
-                set_active_group(head, active_group(True))
+                # set_active_group(head, active_group(True))
+                pass
             else:
                 pass
             proposals, proposals_idx = proposals.contiguous
@@ -441,8 +442,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             msk_loss = self.msk_loss(msk_logits, cls_lbl, msk_lbl)
 
         except Empty:
-            if not self.debug:
-                active_group(False)
+            # if not self.debug:
+            #    active_group(False)
             cls_loss = bbx_loss = msk_loss = sum(x_i.sum() for x_i in x) * 0
             batch_size = len(bbx)
             cls_gt_logits, bbx_gt_logits, msk_gt_logits = [None] * batch_size, [None] * batch_size, [None] * batch_size
