@@ -346,7 +346,6 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
-        print(rois)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             if idx.any().item():
@@ -355,6 +354,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
+        print(rois)
         if rois.shape[0] == 1:
             prune = True
             rois = torch.cat([rois, rois], dim=0)
