@@ -173,10 +173,10 @@ class PanopticBevNet(nn.Module):
 
         # Get the image features
         ms_feat = self.body(img)
-        print(ms_feat.shape)
 
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
+        print(ms_bev)
         ## for feat in ms_bev:
         ##    print(feat.size())
         if do_loss:
