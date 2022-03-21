@@ -407,7 +407,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             with torch.no_grad():
                 proposals, match = self.proposal_matcher(proposals, bbx, cat, iscrowd)
                 cls_lbl, bbx_lbl, msk_lbl = self._match_to_lbl(proposals, bbx, cat, ids, msk, match)
-            print(x.device)
+            print(x[0].device)
             print(proposals.all_none)
             if proposals.all_none:
                 raise Empty
@@ -419,7 +419,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             #else:
             #    pass
             proposals, proposals_idx = proposals.contiguous
-            print(proposals)
+            print(proposals[0].shape)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
             print("YES")
 
