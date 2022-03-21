@@ -413,7 +413,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
                 raise Empty
 
             # Run head
-            #if not self.debug:
+            # if not self.debug:
             #    # set_active_group(head, active_group(True))
             #    pass
             #else:

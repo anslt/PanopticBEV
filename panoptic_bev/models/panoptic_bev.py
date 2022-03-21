@@ -178,8 +178,8 @@ class PanopticBevNet(nn.Module):
 
         # Transform from the front view to the BEV and upsample the height dimension
         ms_bev, vf_logits_list, v_region_logits_list, f_region_logits_list = self.transformer(ms_feat, calib)
-        print(len(ms_bev))
-        print(ms_feat[0].shape)
+        # print(len(ms_bev))
+        # print(ms_feat[0].shape)
 
         ## for feat in ms_bev:
         ##    print(feat.size())
@@ -201,7 +201,10 @@ class PanopticBevNet(nn.Module):
             obj_loss, bbx_loss = None, None
         else:
             obj_loss, bbx_loss, proposals = None, None, None
+
         print(obj_loss)
+        print(len(proposals))
+        print(proposals[0].shape)
         # ROI Part
         if do_loss:
             roi_cls_loss, roi_bbx_loss, roi_msk_loss, roi_cls_logits, roi_bbx_logits, roi_msk_logits = \
