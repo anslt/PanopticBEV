@@ -46,9 +46,10 @@ class FPNMaskHead(nn.Module):
         # ROI section
         self.fc = nn.Sequential(OrderedDict([
             ("fc1", nn.Linear(int(roi_size[0] * roi_size[1] * in_channels / 4), fc_hidden_channels, bias=False)),
-            ("bn1", norm_act(fc_hidden_channels)),
+            ("bn1", nn.BatchNorm1d(fc_hidden_channels)),
+            ("act1", nn.LeakyReLU(inplace=True)),
             ("fc2", nn.Linear(fc_hidden_channels, fc_hidden_channels, bias=False)),
-            ("bn2", norm_act(fc_hidden_channels)),
+            ("bn2", nn.BatchNorm1d(fc_hidden_channels)),
         ]))
         self.roi_cls = nn.Linear(fc_hidden_channels, classes["thing"] + 1)
         self.roi_bbx = nn.Linear(fc_hidden_channels, classes["thing"] * 4)
@@ -57,22 +58,27 @@ class FPNMaskHead(nn.Module):
 
         self.conv = nn.Sequential(OrderedDict([
             ("conv1", nn.Conv2d(in_channels, conv_hidden_channels, 3, padding=1, bias=False)),
-            ("bn1", norm_act(conv_hidden_channels)),
+            ("bn1", nn.BatchNorm2d(conv_hidden_channels)),
+            ("act1", nn.LeakyReLU(inplace=True)),
             ("conv2", nn.Conv2d(conv_hidden_channels, conv_hidden_channels, 3, padding=1, bias=False)),
-            ("bn2", norm_act(conv_hidden_channels)),
+            ("bn2", nn.BatchNorm2d(conv_hidden_channels)),
+            ("act2", nn.LeakyReLU(inplace=True)),
             ("conv3", nn.Conv2d(conv_hidden_channels, conv_hidden_channels, 3, padding=1, bias=False)),
-            ("bn3", norm_act(conv_hidden_channels)),
+            ("bn3", nn.BatchNorm2d(conv_hidden_channels)),
+            ("act3", nn.LeakyReLU(inplace=True)),
             ("conv4", nn.Conv2d(conv_hidden_channels, conv_hidden_channels, 3, padding=1, bias=False)),
-            ("bn4", norm_act(conv_hidden_channels)),
+            ("bn4", nn.BatchNorm2d(conv_hidden_channels)),
+            ("act4", nn.LeakyReLU(inplace=True)),
             ("conv_up", nn.ConvTranspose2d(conv_hidden_channels, conv_hidden_channels, 2, stride=2, bias=False)),
-            ("bn_up", norm_act(conv_hidden_channels)),
+            ("bn_up", nn.BatchNorm2d(conv_hidden_channels)),
+            ("act_up", nn.LeakyReLU(inplace=True)),
         ]))
         self.roi_msk = nn.Conv2d(conv_hidden_channels, classes["thing"], 1)
 
         self.reset_parameters()
 
     def reset_parameters(self):
-        gain = nn.init.calculate_gain(self.fc.bn1.activation, self.fc.bn1.activation_param)
+        gain = nn.init.calculate_gain('leaky_relu', 0.01)
 
         for name, mod in self.named_modules():
             if isinstance(mod, nn.Linear) or isinstance(mod, nn.Conv2d) or isinstance(mod, nn.ConvTranspose2d):
@@ -150,13 +156,13 @@ class FPNSemanticHeadDPC(nn.Module):
             super(FPNSemanticHeadDPC._3x3box, self).__init__()
 
             self.conv1_3x3_1 = seperable_conv(in_channels, out_channels, (1, 1), norm_act, bias=False)
-            self.conv1_3x3_1_bn = norm_act(out_channels)
+            self.conv1_3x3_1_bn = nn.BatchNorm2d(out_channels)
             self.conv1_3x3_2 = seperable_conv(out_channels, out_channels, (1, 1), norm_act, bias=False)
-            self.conv1_3x3_2_bn = norm_act(out_channels)
+            self.conv1_3x3_2_bn = nn.BatchNorm2d(out_channels)
 
         def forward(self, x):
-            x = self.conv1_3x3_1_bn(self.conv1_3x3_1(x))
-            x = self.conv1_3x3_2_bn(self.conv1_3x3_2(x))
+            x = functional.leaky_relu(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)), negative_slope=0.01, inplace=True)
+            x = functional.leaky_relu(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)), negative_slope=0.01, inplace=True)
             return x
 
     class _DPC(nn.Module):
@@ -164,27 +170,33 @@ class FPNSemanticHeadDPC(nn.Module):
             super(FPNSemanticHeadDPC._DPC, self).__init__()
 
             self.conv1_3x3_1 = seperable_conv(in_channels, in_channels, (1, 6), norm_act, bias=False)
-            self.conv1_3x3_1_bn = norm_act(in_channels)
+            self.conv1_3x3_1_bn = nn.BatchNorm2d(in_channels)
+            self.conv1_3x3_1_act = nn.LeakyReLU(0.01, True)
             self.conv1_3x3_2 = seperable_conv(in_channels, in_channels, (1, 1), norm_act, bias=False)
-            self.conv1_3x3_2_bn = norm_act(in_channels)
+            self.conv1_3x3_2_bn = nn.BatchNorm2d(in_channels)
+            self.conv1_3x3_2_act = nn.LeakyReLU(0.01, True)
             self.conv1_3x3_3 = seperable_conv(in_channels, in_channels, (6, 21), norm_act, bias=False)
-            self.conv1_3x3_3_bn = norm_act(in_channels)
+            self.conv1_3x3_3_bn = nn.BatchNorm2d(in_channels)
+            self.conv1_3x3_3_act = nn.LeakyReLU(0.01, True)
             self.conv1_3x3_4 = seperable_conv(in_channels, in_channels, (18, 15), norm_act, bias=False)
-            self.conv1_3x3_4_bn = norm_act(in_channels)
+            self.conv1_3x3_4_bn = nn.BatchNorm2d(in_channels)
+            self.conv1_3x3_4_act = nn.LeakyReLU(0.01, True)
             self.conv1_3x3_5 = seperable_conv(in_channels, in_channels, (6, 3), norm_act, bias=False)
-            self.conv1_3x3_5_bn = norm_act(in_channels)
+            self.conv1_3x3_5_bn = nn.BatchNorm2d(in_channels)
+            self.conv1_3x3_5_act = nn.LeakyReLU(0.01, True)
 
             self.conv2 = nn.Conv2d(in_channels * 5, out_channels, 1, bias=False)
-            self.bn2 = norm_act(out_channels)
+            self.bn2 = nn.BatchNorm2d(out_channels)
+            self.act2 = nn.LeakyReLU(0.01, True)
 
         #            self._swish = MemoryEfficientSwish()
 
         def forward(self, x):
-            x = self.conv1_3x3_1_bn(self.conv1_3x3_1(x))
-            x1 = self.conv1_3x3_2_bn(self.conv1_3x3_2(x))
-            x2 = self.conv1_3x3_3_bn(self.conv1_3x3_3(x))
-            x3 = self.conv1_3x3_4_bn(self.conv1_3x3_4(x))
-            x4 = self.conv1_3x3_4_bn(self.conv1_3x3_4(x3))
+            x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
+            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)))
+            x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
+            x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
+            x4 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x3)))
             x = torch.cat([
                 x,
                 x1,
@@ -193,7 +205,7 @@ class FPNSemanticHeadDPC(nn.Module):
                 x4
             ], dim=1)
             x = self.conv2(x)
-            x = self.bn2(x)
+            x = self.act2(self.bn2(x))
             return x
 
     def __init__(self,
@@ -230,7 +242,7 @@ class FPNSemanticHeadDPC(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        gain = nn.init.calculate_gain(self.output_1[0].bn2.activation, self.output_1[0].bn2.activation_param)
+        gain = nn.init.calculate_gain('leaky_relu', 0.01)
         for name, mod in self.named_modules():
             if isinstance(mod, nn.Conv2d):
                 if "conv_sem" not in name:
