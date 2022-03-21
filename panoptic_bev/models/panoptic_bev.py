@@ -207,11 +207,11 @@ class PanopticBevNet(nn.Module):
             roi_cls_logits, roi_bbx_logits, roi_msk_logits = None, None, None
         if do_prediction:
             bbx_pred, cls_pred, obj_pred, msk_pred, roi_msk_logits = self.inst_algo.inference(self.roi_head, ms_bev,
-        print(roi_cls_loss)                                                                                      proposals, valid_size,
+                                                                                              proposals, valid_size,
                                                                                               img_size)
         else:
             bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
-
+        print(roi_cls_loss)
         # Segmentation Part
         if do_loss:
             sem_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = self.sem_algo.training(self.sem_head, ms_bev,
