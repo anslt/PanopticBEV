@@ -398,7 +398,6 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
     def training(self, head, x, proposals, bbx, cat, iscrowd, ids, msk, img_size):
         x = x[self.min_level:self.min_level + self.levels]
-        print(x.shape)
         
         try:
             if proposals.all_none:
@@ -413,13 +412,15 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
                 raise Empty
 
             # Run head
-            if not self.debug:
-                # set_active_group(head, active_group(True))
-                pass
-            else:
-                pass
+            #if not self.debug:
+            #    # set_active_group(head, active_group(True))
+            #    pass
+            #else:
+            #    pass
             proposals, proposals_idx = proposals.contiguous
+            print(proposals)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
+            print("YES")
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)
