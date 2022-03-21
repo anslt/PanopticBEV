@@ -419,7 +419,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             #else:
             #    pass
             proposals, proposals_idx = proposals.contiguous
-            # print(proposals[0])
+            print(proposals[0].shape)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
             # print("YES")
 

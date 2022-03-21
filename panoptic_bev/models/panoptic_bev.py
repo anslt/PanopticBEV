@@ -203,8 +203,8 @@ class PanopticBevNet(nn.Module):
             obj_loss, bbx_loss, proposals = None, None, None
 
         print(obj_loss)
-        print(len(proposals))
-        print(proposals[0].shape)
+        # print(len(proposals))
+        # print(proposals[0].shape)
         # ROI Part
         if do_loss:
             roi_cls_loss, roi_bbx_loss, roi_msk_loss, roi_cls_logits, roi_bbx_logits, roi_msk_logits = \
