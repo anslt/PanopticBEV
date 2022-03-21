@@ -398,7 +398,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
     def training(self, head, x, proposals, bbx, cat, iscrowd, ids, msk, img_size):
         x = x[self.min_level:self.min_level + self.levels]
-        
+        print(x)
         try:
             if proposals.all_none:
                 raise Empty
