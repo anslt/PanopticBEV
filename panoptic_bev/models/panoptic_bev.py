@@ -187,7 +187,7 @@ class PanopticBevNet(nn.Module):
             vf_loss, v_region_loss, f_region_loss = None, None, None
         else:
             vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
-        print(vf_loss)
+
         # RPN Part
         if do_loss:
             obj_loss, bbx_loss, proposals = self.rpn_algo.training(self.rpn_head, ms_bev, bbx, iscrowd, valid_size,
@@ -197,7 +197,7 @@ class PanopticBevNet(nn.Module):
             obj_loss, bbx_loss = None, None
         else:
             obj_loss, bbx_loss, proposals = None, None, None
-
+        print(obj_loss)
         # ROI Part
         if do_loss:
             roi_cls_loss, roi_bbx_loss, roi_msk_loss, roi_cls_logits, roi_bbx_logits, roi_msk_logits = \
@@ -207,7 +207,7 @@ class PanopticBevNet(nn.Module):
             roi_cls_logits, roi_bbx_logits, roi_msk_logits = None, None, None
         if do_prediction:
             bbx_pred, cls_pred, obj_pred, msk_pred, roi_msk_logits = self.inst_algo.inference(self.roi_head, ms_bev,
-                                                                                              proposals, valid_size,
+        print(roi_cls_loss)                                                                                      proposals, valid_size,
                                                                                               img_size)
         else:
             bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
