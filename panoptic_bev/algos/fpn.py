@@ -397,7 +397,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         return cls_gt_list, bbx_gt_list, msk_gt_list
 
     def training(self, head, x, proposals, bbx, cat, iscrowd, ids, msk, img_size):
-        print(x[0].shape)
+        # print(x[0].shape)
         x = x[self.min_level:self.min_level + self.levels]
 
         try:
@@ -421,7 +421,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             proposals, proposals_idx = proposals.contiguous
             # print(proposals[0])
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
-            print("YES")
+            # print("YES")
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)
