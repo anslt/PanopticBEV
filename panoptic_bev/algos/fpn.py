@@ -422,7 +422,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             # print(proposals.shape)
             # print(proposals_idx)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
-            # print("YES")
+            print(cls_logits)
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)
