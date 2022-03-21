@@ -346,6 +346,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
+        print(rois)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             if idx.any().item():
@@ -407,8 +408,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             with torch.no_grad():
                 proposals, match = self.proposal_matcher(proposals, bbx, cat, iscrowd)
                 cls_lbl, bbx_lbl, msk_lbl = self._match_to_lbl(proposals, bbx, cat, ids, msk, match)
-            print(x[0].device)
-            print(proposals.all_none)
+
             if proposals.all_none:
                 raise Empty
 
@@ -419,7 +419,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             #else:
             #    pass
             proposals, proposals_idx = proposals.contiguous
-            print(proposals[0].shape)
+
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
             print("YES")
 
