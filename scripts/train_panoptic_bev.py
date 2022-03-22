@@ -458,7 +458,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         optimizer.step()
 
         time_meters['batch_time'].update(torch.tensor(time.time() - batch_time))
-        torch.cuda.synchronize()
+        # torch.cuda.synchronize()
 
         # Gather stats from all workers
         if not varargs['debug']:
