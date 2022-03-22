@@ -349,8 +349,12 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _head(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
         target_level = self._target_level(proposals)
-        print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
-        print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
+        #print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
+        #print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
+        print("Level 0: ", torch.sum(target_level == 0))
+        print("Level 1: ", torch.sum(target_level == 1))
+        print("Level 2: ", torch.sum(target_level == 2))
+        print("Level 3: ", torch.sum(target_level == 3))
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
@@ -360,7 +364,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        print(rois[0,0])
+        print("ROI00: ", torch.sum(rois[0,0]))
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
