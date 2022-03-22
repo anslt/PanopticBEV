@@ -434,6 +434,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             else:
                 bbx_gt, bbx_gt_idx = bbx_ps.contiguous
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._head(head, x, bbx_gt, bbx_gt_idx, img_size, True, True)
+                print(cls_gt_logits)
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._make_batch_list(cls_gt_logits, bbx_gt_logits,
                                                                                     msk_gt_logits, bbx_gt_idx,
                                                                                     batch_size)
