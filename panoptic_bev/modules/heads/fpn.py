@@ -330,7 +330,7 @@ class FPNSemanticHeadDPC(nn.Module):
             # print(rot_logits)
         else:
             roi_logits = None
-            print("NO")
+            # print("NO")
 
 
         return xs, sem_feat, roi_logits
