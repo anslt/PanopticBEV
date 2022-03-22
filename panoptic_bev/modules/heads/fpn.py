@@ -320,11 +320,17 @@ class FPNSemanticHeadDPC(nn.Module):
                 xs[i] = functional.interpolate(xs[i], size=ref_size, **interp_params)
 
         sem_feat = torch.cat(xs, dim=1)
+        print(sem_feat.shape)
+        print(sem_feat)
         xs = self.conv_sem(sem_feat)
 
         if roi and bbx is not None:
             roi_logits = self._roi_head(sem_feat, bbx, img_size)
+            print(roi_logits.shape)
+            print(rot_logits)
         else:
             roi_logits = None
+            print("NO")
+
 
         return xs, sem_feat, roi_logits
