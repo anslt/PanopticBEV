@@ -25,7 +25,7 @@ class RPNHead(nn.Module):
 
         self.conv1 = nn.Conv2d(in_channels, hidden_channels, 3, padding=1, stride=stride, bias=False)
         self.bn1 = nn.BatchNorm2d(hidden_channels)
-        self.act1 = nn.LeakyReLU(0.01, True)
+        self.act1 = nn.LeakyReLU(0.01, inplace=True)
 
         self.conv_obj = nn.Conv2d(hidden_channels, num_anchors, 1)
         self.conv_bbx = nn.Conv2d(hidden_channels, num_anchors * 4, 1)
