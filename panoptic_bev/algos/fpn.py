@@ -309,10 +309,10 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         proposals = (proposals - 0.5) * stride.repeat(2) + 0.5
         print(proposals.device)
         print(x.device)
-        print(torch.sum(torch.isnan(proposals_idx)))
+        print("ISNAN: ", torch.sum(torch.isnan(proposals_idx)))
         output = roi_sampling(x, proposals, proposals_idx, self.roi_size)
         print(output.device)
-        print(torch.sum(output))
+        print("SUM: ", torch.sum(output))
         return output
 
     def _head1(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
