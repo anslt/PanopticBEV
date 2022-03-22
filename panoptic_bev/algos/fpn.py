@@ -307,17 +307,19 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _rois(self, x, proposals, proposals_idx, img_size):
         stride = proposals.new([fs / os for fs, os in zip(x.shape[-2:], img_size)])
         proposals = (proposals - 0.5) * stride.repeat(2) + 0.5
-        print(proposals.device)
-        print(x.device)
-        print("ISNAN: ", torch.sum(torch.isnan(proposals_idx)))
+        # print(proposals.device)
+        # print(x.device)
+        # print("ISNAN: ", torch.sum(torch.isnan(proposals_idx)))
         output = roi_sampling(x, proposals, proposals_idx, self.roi_size)
-        print(output.device)
+        # print(output.device)
         print("SUM: ", torch.sum(output))
         return output
 
     def _head1(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
         target_level = self._target_level(proposals)
+        print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
+        print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
 
         # Sample rois
         rois = x[0][0].new_zeros(proposals.size(0), x[0][0].size(1), self.roi_size[0], self.roi_size[1])
