@@ -352,7 +352,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        # print(rois[0,0])
+        print(rois[0,0])
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
@@ -360,6 +360,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             prune = True
             rois = torch.cat([rois, rois], dim=0)
         cls_logits, bbx_logits, msk_logits = head(rois, do_cls_bbx, do_msk)
+        print(cls_logits.shape)
+        print(cls_logits)
         if prune:
             if cls_logits is not None:
                 cls_logits = cls_logits[0, ...].unsqueeze(0)
@@ -447,7 +449,6 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
             # Calculate losses
             cls_loss, bbx_loss = self.bbx_loss(cls_logits, bbx_logits, cls_lbl, bbx_lbl)
-            print(cls_loss)
             msk_loss = self.msk_loss(msk_logits, cls_lbl, msk_lbl)
 
         except Empty:
