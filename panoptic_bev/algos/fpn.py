@@ -352,7 +352,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        print(rois)
+        print(rois[0,0])
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
