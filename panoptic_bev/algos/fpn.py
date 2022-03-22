@@ -361,6 +361,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         print(rois.shape)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
+            print("Traget Level ", level_i, ": ", torch.sum(idx))
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
@@ -372,8 +373,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             prune = True
             rois = torch.cat([rois, rois], dim=0)
         cls_logits, bbx_logits, msk_logits = head(rois, do_cls_bbx, do_msk)
-        print(cls_logits.shape)
-        print(cls_logits)
+        # print(cls_logits.shape)
+        # print(cls_logits)
         if prune:
             if cls_logits is not None:
                 cls_logits = cls_logits[0, ...].unsqueeze(0)
