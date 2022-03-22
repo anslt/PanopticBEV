@@ -307,9 +307,12 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _rois(self, x, proposals, proposals_idx, img_size):
         stride = proposals.new([fs / os for fs, os in zip(x.shape[-2:], img_size)])
         proposals = (proposals - 0.5) * stride.repeat(2) + 0.5
-        print(proposals)
+        print(proposals.device)
+        print(x.device)
+        print(proposals_idx.device)
         output = roi_sampling(x, proposals, proposals_idx, self.roi_size)
-        print(output)
+        print(output.device)
+        print(torch.sum(output))
         return output
 
     def _head1(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
@@ -429,7 +432,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             # print(proposals.shape)
             # print(proposals)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
-            print(cls_logits)
+            print(torch.sum(cls_logits))
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)
