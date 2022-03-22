@@ -437,6 +437,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._make_batch_list(cls_gt_logits, bbx_gt_logits,
                                                                                     msk_gt_logits, bbx_gt_idx,
                                                                                     batch_size)
+            print(cls_gt_logits)
             cls_gt_logits = PackedSequence(cls_gt_logits)
             bbx_gt_logits = PackedSequence(bbx_gt_logits)
             msk_gt_logits = PackedSequence(msk_gt_logits)
