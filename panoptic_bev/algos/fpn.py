@@ -346,11 +346,13 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
+        print(rois.shape)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
+        print(rois)
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
@@ -434,11 +436,11 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             else:
                 bbx_gt, bbx_gt_idx = bbx_ps.contiguous
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._head(head, x, bbx_gt, bbx_gt_idx, img_size, True, True)
-                print(cls_gt_logits)
+                # print(cls_gt_logits)
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._make_batch_list(cls_gt_logits, bbx_gt_logits,
                                                                                     msk_gt_logits, bbx_gt_idx,
                                                                                     batch_size)
-            print(cls_gt_logits)
+            # print(cls_gt_logits)
             cls_gt_logits = PackedSequence(cls_gt_logits)
             bbx_gt_logits = PackedSequence(bbx_gt_logits)
             msk_gt_logits = PackedSequence(msk_gt_logits)
