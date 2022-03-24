@@ -183,6 +183,7 @@ def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mea
     msk_gt, cat_gt = msk_gt.cpu(), cat_gt.cpu()
     msk_pred, cat_pred, _, iscrowd_pred = panoptic_pred
 
+    print(cat_pred)
     for ind, ele in cat_pred:
         if ele != 255:
             _inf = _mean_stat[ele] - num * _std_stat[ele]
