@@ -500,7 +500,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
-        break
+        # break
 
     # del results
     for ind, ele in enumerate(stat_list):
