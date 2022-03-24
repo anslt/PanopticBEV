@@ -189,7 +189,8 @@ def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mea
             _inf = _mean_stat[ele] - num * _std_stat[ele]
             _sup = _mean_stat[ele] + num * _std_stat[ele]
             _value = torch.sum(msk_pred==ind)
-            print(_inf)
+            print(ele)
+            print(_mean_stat)
             if _value < _inf or _value > _sup:
                 iscrowd_pred[ind] = True
 
