@@ -58,8 +58,8 @@ parser.add_argument("--config", required=True, type=str, help="Path to configura
 parser.add_argument("--debug", type=bool, default=False, help="Should the program run in 'debug' mode?")
 parser.add_argument("--freeze_modules", nargs='+', default=[], help="The modules to freeze. Default is empty")
 
-MEAN_STAT = []
-STD_STAT = []
+MEAN_STAT = [86224.98, 15982.01, 32885.17, 42144.32, 24009.26, 27709.98, 138.46, 1922.64, 4244.68, 329.36]
+STD_STAT = [47469.69, 13612.16, 24796.28, 35364.00, 28782.85, 27920.03, 61.78, 539.64, 2505.84, 152.31]
 
 def log_info(msg, *args, **kwargs):
     if "debug" in kwargs.keys():

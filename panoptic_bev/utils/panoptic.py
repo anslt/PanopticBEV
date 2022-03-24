@@ -178,12 +178,19 @@ def make_semantic_gt_list(msk, cat):
     return sem_out
 
 
-def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mean_stat, _std_stat):
+def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mean_stat, _std_stat, num=1.5):
     # Move gt to CPU
     msk_gt, cat_gt = msk_gt.cpu(), cat_gt.cpu()
     msk_pred, cat_pred, _, iscrowd_pred = panoptic_pred
 
-    print(cat_pred)
+    for ind, ele in cat_pred:
+        if ele != 255:
+            _inf = _mean_stat[ele] - num * _std_stat[ele]
+            _sup = _mean_stat[ele] + num * _std_stat[ele]
+            _value = torch.sum(msk_pred==ind)
+            if _value < _inf or _value > _sup:
+                iscrowd_pred[ind] = True
+
 
     # Convert crowd predictions to void
     msk_remap = msk_pred.new_zeros(cat_pred.numel())
