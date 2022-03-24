@@ -509,6 +509,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         print("mean: ", np.mean(ele_array))
         print("std: ", np.std(ele_array))
         print()
+    stat_list = [np.array(ele) for ele in stat_list]
+    np.save("train_stat", stat_list)
 
     return global_step
 
