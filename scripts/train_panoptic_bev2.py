@@ -38,6 +38,7 @@ from panoptic_bev.utils.parallel import DistributedDataParallel
 from panoptic_bev.utils.snapshot import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
+import numpy as np
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Training Script")
