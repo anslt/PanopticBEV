@@ -474,9 +474,10 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         #        meters[loss_name].update(loss_value.cpu())
         #    meters['sem_conf'].update(sem_conf_stat.cpu())
         bev_msk, _ = pad_packed_images(sample["bev_msk"])
-        cat, _ = pad_packed_images(sample["cat"])
+        for ind, cat in enmuerate(sample["cat"]):
+            print(cat)
         print(bev_msk)
-        print(cat)
+        # print(cat)
 
         # Clean-up
         del sample
