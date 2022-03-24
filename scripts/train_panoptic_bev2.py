@@ -501,7 +501,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         data_time = time.time()
         break
 
-    del results
+    # del results
     for ind, ele in enumerate(stat_list):
         ele_array = np.array(ele)
         print(ind,":")
