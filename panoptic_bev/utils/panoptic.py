@@ -185,7 +185,7 @@ def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mea
 
     # print(cat_pred)
     for ind, ele in enumerate(list(cat_pred.numpy())):
-        if ele != 255:
+        if ele != 255 and ele >= 6:
             _inf = _mean_stat[ele] - num * _std_stat[ele]
             _sup = _mean_stat[ele] + num * _std_stat[ele]
             _value = torch.sum(msk_pred==ind)
