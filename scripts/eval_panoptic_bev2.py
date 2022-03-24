@@ -368,8 +368,8 @@ def test(model, dataloader, **varargs):
     num_classes = num_stuff + num_thing
 
     loss_weights = varargs['loss_weights']
-    mean_stat = torch.FloatTensor([MEAN_STAT]).to(model.device)
-    std_stat = torch.FloatTensor([STD_STAT]).to(model.device)
+    mean_stat = torch.FloatTensor(MEAN_STAT).cpu()
+    std_stat = torch.FloatTensor(STD_STAT).cpu()
 
     test_meters = {
         "loss": AverageMeter(()),
