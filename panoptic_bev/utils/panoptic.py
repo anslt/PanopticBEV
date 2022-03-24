@@ -176,3 +176,105 @@ def make_semantic_gt_list(msk, cat):
         msk_i = msk_i.squeeze(0)
         sem_out.append(cat_i[msk_i])
     return sem_out
+
+
+def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mean_stat, _std_stat, num=1.5):
+    # Move gt to CPU
+    msk_gt, cat_gt = msk_gt.cpu(), cat_gt.cpu()
+    msk_pred, cat_pred, _, iscrowd_pred = panoptic_pred
+
+    # print(cat_pred)
+    for ind, ele in enumerate(list(cat_pred.numpy())):
+        if ele != 255:
+            _inf = _mean_stat[ele] - num * _std_stat[ele]
+            _sup = _mean_stat[ele] + num * _std_stat[ele]
+            _value = torch.sum(msk_pred==ind)
+            if _value < _inf or _value > _sup:
+                iscrowd_pred[ind] = True
+
+
+    # Convert crowd predictions to void
+    msk_remap = msk_pred.new_zeros(cat_pred.numel())
+    msk_remap[~(iscrowd_pred > 0)] = torch.arange(0, (~(iscrowd_pred > 0)).long().sum().item(), dtype=msk_remap.dtype,
+                                                  device=msk_remap.device)
+
+    msk_pred = msk_remap[msk_pred]
+    cat_pred = cat_pred[~(iscrowd_pred > 0)]
+
+    iou = msk_pred.new_zeros(num_classes, dtype=torch.double)
+    tp = msk_pred.new_zeros(num_classes, dtype=torch.double)
+    fp = msk_pred.new_zeros(num_classes, dtype=torch.double)
+    fn = msk_pred.new_zeros(num_classes, dtype=torch.double)
+
+    if cat_gt.numel() > 1:
+        msk_gt = msk_gt.view(-1)
+        msk_pred = msk_pred.view(-1)
+
+        # Compute confusion matrix
+        confmat = msk_pred.new_zeros(cat_gt.numel(), cat_pred.numel(), dtype=torch.double)
+        confmat.view(-1).index_add_(0, msk_gt * cat_pred.numel() + msk_pred,
+                                    confmat.new_ones(msk_gt.numel()))
+
+        # track potentially valid FP, i.e. those that overlap with void_gt <= 0.5
+        num_pred_pixels = confmat.sum(0)
+        valid_fp = (confmat[0] / num_pred_pixels) <= 0.5
+
+        # compute IoU without counting void pixels (both in gt and pred)
+        _iou = confmat / ((num_pred_pixels - confmat[0]).unsqueeze(0) + confmat.sum(1).unsqueeze(1) - confmat)
+
+        # flag TP matches, i.e. same class and iou > 0.5
+        matches = ((cat_gt.unsqueeze(1) == cat_pred.unsqueeze(0)) & (_iou > 0.5))
+
+        # remove potential match of void_gt against void_pred
+        matches[0, 0] = 0
+
+        _iou = _iou[matches]
+        tp_i, _ = matches.max(1)
+        fn_i = ~tp_i
+        fn_i[0] = 0  # remove potential fn match due to void against void
+        fp_i = ~matches.max(0)[0] & valid_fp
+        fp_i[0] = 0  # remove potential fp match due to void against void
+
+        # Compute per instance classes for each tp, fp, fn
+        tp_cat = cat_gt[tp_i]
+        fn_cat = cat_gt[fn_i]
+        fp_cat = cat_pred[fp_i]
+
+        # Accumulate per class counts
+        if tp_cat.numel() > 0:
+            tp.index_add_(0, tp_cat, tp.new_ones(tp_cat.numel()))
+        if fp_cat.numel() > 0:
+            fp.index_add_(0, fp_cat, fp.new_ones(fp_cat.numel()))
+        if fn_cat.numel() > 0:
+            fn.index_add_(0, fn_cat, fn.new_ones(fn_cat.numel()))
+        if tp_cat.numel() > 0:
+            iou.index_add_(0, tp_cat, _iou)
+
+    # note else branch is not needed because if cat_gt has only void we don't penalize predictions
+    return iou, tp, fp, fn
+
+def compute_panoptic_test_metrics2(panoptic_pred_list, panoptic_buffer, conf_mat, **varargs):
+
+    # panoptic_per_image = [] # add
+    for i, po_dict in enumerate(panoptic_pred_list):
+        sem_gt = po_dict['sem_gt']
+        msk_gt = po_dict['msk_gt']
+        cat_gt = po_dict['cat_gt']
+        idx = po_dict['idx']
+        panoptic_pred = po_dict['po_pred']
+
+        temp = torch.stack(panoptic_stats2(msk_gt, cat_gt, panoptic_pred, varargs['num_classes'],
+                                                      varargs['num_stuff'], varargs['mean_stat'],varargs['std_stat']), dim=0)
+        panoptic_buffer += temp
+        # panoptic_per_image.append(temp) # add
+
+        # Calculate confusion matrix on panoptic output
+        sem_pred = panoptic_pred[1][panoptic_pred[0]]
+
+        conf_mat_i = confusion_matrix(sem_gt.cpu(), sem_pred)
+        conf_mat += conf_mat_i.to(conf_mat)
+
+    # panoptic_per_image = torch.stack(panoptic_per_image, dim=0).cpu().numpy() # add
+    # np.save("result.npy",panoptic_per_image) # add
+
+    return panoptic_buffer, conf_mat
