@@ -473,7 +473,10 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         #    for loss_name, loss_value in losses.items():
         #        meters[loss_name].update(loss_value.cpu())
         #    meters['sem_conf'].update(sem_conf_stat.cpu())
-        print(sample)
+        bev_msk, _ = pad_packed_images(sample["bev_msk"])
+        cat, _ = pad_packed_images(sample["cat"])
+        print(bev_msk)
+        print(cat)
 
         # Clean-up
         del sample
