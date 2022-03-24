@@ -178,7 +178,7 @@ def make_semantic_gt_list(msk, cat):
     return sem_out
 
 
-def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mean_stat, _std_stat, num=2):
+def panoptic_stats2(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff, _mean_stat, _std_stat, num=1.5):
     # Move gt to CPU
     msk_gt, cat_gt = msk_gt.cpu(), cat_gt.cpu()
     msk_pred, cat_pred, _, iscrowd_pred = panoptic_pred
