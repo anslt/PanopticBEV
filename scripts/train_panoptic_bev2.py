@@ -422,6 +422,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
     data_time = time.time()
 
+    stat_list = [[] for _ in range(10)]
+
     for it, sample in enumerate(dataloader):
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
         sample['calib'], _ = pad_packed_images(sample['calib'])
@@ -474,9 +476,14 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         #        meters[loss_name].update(loss_value.cpu())
         #    meters['sem_conf'].update(sem_conf_stat.cpu())
         bev_msk, _ = pad_packed_images(sample["bev_msk"])
-        for ind, cat in enumerate(sample["cat"]):
-            print(cat)
-        print(bev_msk)
+        bev_msk = bev_msk.cpu()
+        for idx, cat_i in enumerate(sample["cat"]):
+            cat_i = cat_i.cpu()
+            for ind, cat in enumerate(cat_i):
+                if cat != 255:
+                    stat_list[cat].append(torch.sum(bev_msk[idx]==ind).item())
+
+        # print(bev_msk)
         # print(cat)
 
         # Clean-up
@@ -492,8 +499,16 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
+        break
 
     del results
+    for ind, ele in enumerate(stat_list):
+        ele_array = np.array(ele)
+        print(ind,":")
+        print("mean: ", np.sum(ele_array))
+        print("std: ", np.std(ele_array))
+        print()
+
     return global_step
 
 
