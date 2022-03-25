@@ -375,7 +375,7 @@ def compute_panoptic_test_metrics3(panoptic_pred_list, panoptic_buffer, conf_mat
         idx = po_dict['idx']
         panoptic_pred = po_dict['po_pred']
 
-        temp = torch.stack(panoptic_stats2(msk_gt, cat_gt, panoptic_pred, varargs['num_classes'],
+        temp = torch.stack(panoptic_stats3(msk_gt, cat_gt, panoptic_pred, varargs['num_classes'],
                                                       varargs['num_stuff'], varargs['mean_stat'],varargs['std_stat']), dim=0)
         panoptic_buffer += temp
         # panoptic_per_image.append(temp) # add
