@@ -38,6 +38,7 @@ from panoptic_bev.utils.parallel import DistributedDataParallel
 from panoptic_bev.utils.snapshot import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
+import numpy as np
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Training Script")
@@ -59,8 +60,6 @@ parser.add_argument("--pre_train", type=str, nargs="*",
 parser.add_argument("--config", required=True, type=str, help="Path to configuration file")
 parser.add_argument("--debug", type=bool, default=False, help="Should the program run in 'debug' mode?")
 parser.add_argument("--freeze_modules", nargs='+', default=[], help="The modules to freeze. Default is empty")
-
-div_value = 3
 
 def log_info(msg, *args, **kwargs):
     if "debug" in kwargs.keys():
@@ -328,7 +327,7 @@ def make_optimizer(config, model, epoch_length):
     opt_config = config["optimizer"]
     sch_config = config["scheduler"]
 
-    optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr") / div_value,
+    optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
                           weight_decay=opt_config.getfloat("weight_decay"))
 
     scheduler = scheduler_from_config(sch_config, optimizer, epoch_length)
@@ -424,6 +423,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
     data_time = time.time()
 
+    stat_list = [[] for _ in range(10)]
+
     for it, sample in enumerate(dataloader):
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
         sample['calib'], _ = pad_packed_images(sample['calib'])
@@ -446,52 +447,71 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
 
         # Run network
-        losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
-        if not varargs['debug']:
-            distributed.barrier()
+        # losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
+        #if not varargs['debug']:
+        #    distributed.barrier()
 
-        losses = OrderedDict((k, v.mean()) for k, v in losses.items())
-        losses["loss"] = sum(loss_weights[loss_name] * losses[loss_name] for loss_name in losses.keys())
+        #losses = OrderedDict((k, v.mean()) for k, v in losses.items())
+        #losses["loss"] = sum(loss_weights[loss_name] * losses[loss_name] for loss_name in losses.keys())
 
         # Increment the optimiser and back propagate the gradients
-        if (it + 1) % 3 == 0:
-            optimizer.zero_grad()
-        losses["loss"].backward()
-        if (it + 1) % 3 == 0:
-            optimizer.step()
+        #optimizer.zero_grad()
+        #losses["loss"].backward()
+        #optimizer.step()
 
         time_meters['batch_time'].update(torch.tensor(time.time() - batch_time))
 
         # Gather stats from all workers
-        if not varargs['debug']:
-            losses = all_reduce_losses(losses)
+        # if not varargs['debug']:
+        #    losses = all_reduce_losses(losses)
 
-        sem_conf_stat = stats['sem_conf']
+        # sem_conf_stat = stats['sem_conf']
 
         # Gather the stats from all the workers
-        if not varargs['debug']:
-            distributed.all_reduce(sem_conf_stat, distributed.ReduceOp.SUM)
+        # if not varargs['debug']:
+        #    distributed.all_reduce(sem_conf_stat, distributed.ReduceOp.SUM)
 
         # Update meters
-        with torch.no_grad():
-            for loss_name, loss_value in losses.items():
-                meters[loss_name].update(loss_value.cpu())
-            meters['sem_conf'].update(sem_conf_stat.cpu())
+        # with torch.no_grad():
+        #    for loss_name, loss_value in losses.items():
+        #        meters[loss_name].update(loss_value.cpu())
+        #    meters['sem_conf'].update(sem_conf_stat.cpu())
+        bev_msk, _ = pad_packed_images(sample["bev_msk"])
+        bev_msk = bev_msk.cpu()
+        for idx, cat_i in enumerate(sample["cat"]):
+            cat_i = cat_i.cpu()
+            for ind, cat in enumerate(cat_i):
+                if cat != 255:
+                    stat_list[cat].append(torch.sum(bev_msk[idx]==ind).item())
+
+        # print(bev_msk)
+        # print(cat)
 
         # Clean-up
-        del losses, stats, sample
+        del sample
+
 
         # Log to tensorboard and console
         ## print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
-                log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
+                log_iter("train", {}, time_meters, {}, None, batch=True, global_step=global_step,
                          epoch=varargs["epoch"], num_epochs=varargs['num_epochs'], lr=scheduler.get_lr()[0],
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
+        # break
 
-    del results
+    # del results
+    for ind, ele in enumerate(stat_list):
+        ele_array = np.array(ele)
+        print(ind,":")
+        print("mean: ", np.mean(ele_array))
+        print("std: ", np.std(ele_array))
+        print()
+    stat_list = [np.array(ele) for ele in stat_list]
+    np.save("train_stat", stat_list)
+
     return global_step
 
 
