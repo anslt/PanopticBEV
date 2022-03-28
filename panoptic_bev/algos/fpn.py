@@ -359,13 +359,13 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
         print(rois.shape)
-        if proposals.get_device() == 0:
+        if proposals.get_device() == 1:
             torch.save(proposals.cpu(), "proposals.pt")
             torch.save(proposals_idx.cpu(), "proposals_idx.pt")
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             print("Traget Level ", level_i, ": ", torch.sum(idx))
-            if x_i.get_device() == 0:
+            if x_i.get_device() == 1:
                 torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
