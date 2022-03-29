@@ -362,8 +362,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         # if proposals.get_device() == 1:
         #     torch.save(proposals.cpu(), "proposals.pt")
         #     torch.save(proposals_idx.cpu(), "proposals_idx.pt")
-        torch.load("proposals.pt")
-        torch.load("proposals_idx.pt")
+        proposals = torch.load("proposals.pt")
+        proposals_idx = torch.load("proposals_idx.pt")
         print(proposals)
         # proposals = proposals.cuda()
         # proposals_idx = proposals_idx.cuda()
@@ -372,8 +372,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             print("Traget Level ", level_i, ": ", torch.sum(idx))
             # if x_i.get_device() == 1:
             #     torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
-            torch.load("x_i_"+str(level_i)+".pt")
-            x_i = x_i.cuda()
+            x_i = torch.load("x_i_"+str(level_i)+".pt")
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
