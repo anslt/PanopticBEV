@@ -348,7 +348,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
     def _head(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
-        # target_level = self._target_level(proposals)
+        target_level = self._target_level(proposals)
         device = proposals.device
         #print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
         #print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
