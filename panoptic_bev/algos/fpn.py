@@ -356,7 +356,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
-        # print(rois.shape)
+        print(rois.shape)
         # if proposals.get_device() == 1:
         #    torch.save(proposals.cpu(), "proposals.pt")
         #    torch.save(proposals_idx.cpu(), "proposals_idx.pt")
