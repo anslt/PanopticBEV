@@ -357,28 +357,28 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
         # print(rois.shape)
-        # if proposals.get_device() == 1:
-        #    torch.save(proposals.cpu(), "proposals.pt")
-        #    torch.save(proposals_idx.cpu(), "proposals_idx.pt")
-        proposals = torch.load("proposals.pt")
-        proposals_idx = torch.load("proposals_idx.pt")
+        if proposals.get_device() == 1:
+           torch.save(proposals.cpu(), "proposals.pt")
+           torch.save(proposals_idx.cpu(), "proposals_idx.pt")
+        # proposals = torch.load("proposals.pt")
+        # proposals_idx = torch.load("proposals_idx.pt")
+        # proposals = proposals.to(device)
+        # proposals_idx = proposals_idx.to(device)
+        # target_level = self._target_level(proposals)
         print(proposals)
-        proposals = proposals.to(device)
-        proposals_idx = proposals_idx.to(device)
-        target_level = self._target_level(proposals)
-        print(proposals.shape)
-        print(proposals_idx.shape)
         print("Level 0: ", torch.sum(target_level == 0))
         print("Level 1: ", torch.sum(target_level == 1))
         print("Level 2: ", torch.sum(target_level == 2))
         print("Level 3: ", torch.sum(target_level == 3))
+        print("Img Size: ", img_size)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             print("Traget Level ", level_i, ": ", torch.sum(idx))
-            # if x_i.get_device() == 1:
-            #    torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
-            x_i = torch.load("x_i_"+str(level_i)+".pt")
-            x_i = x_i.to(device)
+            if x_i.get_device() == 1:
+               torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
+            # x_i = torch.load("x_i_"+str(level_i)+".pt")
+            # x_i = x_i.to(device)
+
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
