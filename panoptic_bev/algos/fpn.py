@@ -364,9 +364,9 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             torch.save(proposals_idx.cpu(), "proposals_idx.pt")
         # torch.load("proposals.pt")
         # torch.load("proposals_idx.pt")
-        print(proposals)
-        proposals = proposals.cuda()
-        proposals_idx = proposals_idx.cuda()
+        # print(proposals)
+        # proposals = proposals.cuda()
+        # proposals_idx = proposals_idx.cuda()
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
             print("Traget Level ", level_i, ": ", torch.sum(idx))
