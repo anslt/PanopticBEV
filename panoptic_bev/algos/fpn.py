@@ -364,6 +364,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             torch.save(proposals_idx.cpu(), "proposals_idx.pt")
         # torch.load("proposals.pt")
         # torch.load("proposals_idx.pt")
+        print(proposals)
         proposals = proposals.cuda()
         proposals_idx = proposals_idx.cuda()
         for level_i, x_i in enumerate(x):
