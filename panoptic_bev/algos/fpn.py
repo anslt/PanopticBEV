@@ -375,8 +375,10 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             idx = target_level == (level_i + self.min_level)
             print("Traget Level ", level_i, ": ", torch.sum(idx))
             # if x_i.get_device() == 1:
-            #     torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
+            #    torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
+            print(x_i.shape)
             x_i = torch.load("x_i_"+str(level_i)+".pt")
+            print(x_i.shape)
             x_i = x_i.to(device)
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
