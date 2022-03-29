@@ -58,7 +58,7 @@ class VerticalTransformer(nn.Module):
 
         # Transform the vertical features in the FV to the BEV
         v_feat = v_feat.unsqueeze(1)  # Add a new dimension for applying 3D convolutions
-        v_feat = self.depth_extender_dummy(self.depth_extender(v_feat).contiguous()).contiguous()  # Create the volumetric lattice. Shape --> N x 1 x C_2d x H x W
+        v_feat = self.depth_extender_dummy(self.depth_extender(v_feat.contiguous()))  # Create the volumetric lattice. Shape --> N x 1 x C_2d x H x W
         B, C_3d, C_2d, _, W = v_feat.shape  # Shape --> N x C_3d x C_2d x H x W
         v_feat = v_feat.permute(0, 2, 3, 1, 4).contiguous()  # Shape --> N x C_2d x H x C_3d x W
         v_feat = v_feat * v_region_attention  # Apply the depth-based spatial attention mask across all channels
