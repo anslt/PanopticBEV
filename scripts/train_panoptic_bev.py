@@ -187,13 +187,13 @@ def make_dataloader(args, config, rank, world_size):
         val_dl = torch.utils.data.DataLoader(val_db,
                                              batch_sampler=val_sampler,
                                              collate_fn=iss_collate_fn,
-                                             pin_memory=True,
+                                             # pin_memory=True,
                                              num_workers=dl_config.getint("val_workers"))
     else:
         val_dl = torch.utils.data.DataLoader(val_db,
                                              batch_size=dl_config.getint("val_batch_size"),
                                              collate_fn=iss_collate_fn,
-                                             pin_memory=True,
+                                             # pin_memory=True,
                                              num_workers=dl_config.getint("val_workers"))
 
     return train_dl, val_dl
