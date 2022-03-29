@@ -349,6 +349,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _head(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
         target_level = self._target_level(proposals)
+        device = proposal.device
         #print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
         #print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
         print("Level 0: ", torch.sum(target_level == 0))
@@ -365,6 +366,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         proposals = torch.load("proposals.pt")
         proposals_idx = torch.load("proposals_idx.pt")
         print(proposals)
+        proposals = proposals.to(device)
+        proposals_idx = proposals.to(device)
         target_level = self._target_level(proposals)
         # proposals = proposals.cuda()
         # proposals_idx = proposals_idx.cuda()
@@ -374,6 +377,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             # if x_i.get_device() == 1:
             #     torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
             x_i = torch.load("x_i_"+str(level_i)+".pt")
+            x_i = x_i.to(device)
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
