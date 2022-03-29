@@ -6,7 +6,6 @@ from collections import OrderedDict
 from os import path
 import tensorboardX as tensorboard
 import torch
-print(torch.__version__)
 import torch.optim as optim
 import torch.utils.data as data
 from torch import distributed
