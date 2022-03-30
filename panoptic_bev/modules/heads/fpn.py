@@ -147,9 +147,7 @@ class FPNSemanticHeadDPC(nn.Module):
             self.pointwise = nn.Conv2d(in_channels, out_channels, 1, bias=bias)
 
         def forward(self, x):
-            print("000")
             x = self.depthwise(x)
-            print("001")
             x = self.pointwise(x)
             print("002")
             return x
@@ -174,48 +172,50 @@ class FPNSemanticHeadDPC(nn.Module):
 
             self.conv1_3x3_1 = seperable_conv(in_channels, in_channels, (1, 6), norm_act, bias=False)
             self.conv1_3x3_1_bn = nn.BatchNorm2d(in_channels)
-            self.conv1_3x3_1_act = nn.LeakyReLU(0.01, inplace=False)
+            self.conv1_3x3_1_act = nn.LeakyReLU(0.01, inplace=True)
             self.conv1_3x3_2 = seperable_conv(in_channels, in_channels, (1, 1), norm_act, bias=False)
             self.conv1_3x3_2_bn = nn.BatchNorm2d(in_channels)
-            self.conv1_3x3_2_act = nn.LeakyReLU(0.01, inplace=False)
+            self.conv1_3x3_2_act = nn.LeakyReLU(0.01, inplace=True)
             self.conv1_3x3_3 = seperable_conv(in_channels, in_channels, (6, 21), norm_act, bias=False)
             self.conv1_3x3_3_bn = nn.BatchNorm2d(in_channels)
-            self.conv1_3x3_3_act = nn.LeakyReLU(0.01, inplace=False)
+            self.conv1_3x3_3_act = nn.LeakyReLU(0.01, inplace=True)
             self.conv1_3x3_4 = seperable_conv(in_channels, in_channels, (18, 15), norm_act, bias=False)
             self.conv1_3x3_4_bn = nn.BatchNorm2d(in_channels)
-            self.conv1_3x3_4_act = nn.LeakyReLU(0.01, inplace=False)
+            self.conv1_3x3_4_act = nn.LeakyReLU(0.01, inplace=True)
             self.conv1_3x3_5 = seperable_conv(in_channels, in_channels, (6, 3), norm_act, bias=False)
             self.conv1_3x3_5_bn = nn.BatchNorm2d(in_channels)
-            self.conv1_3x3_5_act = nn.LeakyReLU(0.01, inplace=False)
+            self.conv1_3x3_5_act = nn.LeakyReLU(0.01, inplace=True)
 
             self.conv2 = nn.Conv2d(in_channels * 5, out_channels, 1, bias=False)
             self.bn2 = nn.BatchNorm2d(out_channels)
-            self.act2 = nn.LeakyReLU(0.01, inplace=False)
+            self.act2 = nn.LeakyReLU(0.01, inplace=True)
 
         #            self._swish = MemoryEfficientSwish()
 
         def forward(self, x):
-            x0 = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
+            x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
             print("After HEAD21")
-            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x0)))
+            y=self.conv1_3x3_2(x)
+            print("AFter HEAD211")
+            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(y))
             print("After HEAD22")
-            x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x0)))
+            x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
             print("After HEAD23")
-            x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x0)))
+            x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
             print("After HEAD24")
             x4 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x3)))
             print("After HEAD25")
-            xf = torch.cat([
-                x0,
+            x = torch.cat([
+                x,
                 x1,
                 x2,
                 x3,
                 x4
             ], dim=1)
             print("After HEAD2")
-            xf = self.conv2(xf)
-            xf = self.act2(self.bn2(xf))
-            return xf
+            x = self.conv2(x)
+            x = self.act2(self.bn2(x))
+            return x
 
     def __init__(self,
                  in_channels,
