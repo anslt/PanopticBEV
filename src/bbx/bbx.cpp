@@ -38,7 +38,7 @@ at::Tensor mask_count(const at::Tensor& bbx, const at::Tensor& int_mask) {
   TORCH_CHECK(int_mask.ndimension() == 2, "Input mask should be 2D");
 
   if (bbx.is_cuda()) {
-    const at::cuda::OptionalCUDAGuard device_guard(device_of(mask));
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(bbx));
     return mask_count_cuda(bbx, int_mask);
   } else {
     return mask_count_cpu(bbx, int_mask);
