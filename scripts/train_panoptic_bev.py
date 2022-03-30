@@ -410,7 +410,8 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     model.train()
-    device_id = model.get_device()
+    device_id = distributed.get_rank()
+    
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
     optimizer.zero_grad()
@@ -498,7 +499,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
 def validate(model, dataloader, **varargs):
     model.eval()
-    device_id=model.get_device()
+    device_id=distributed.get_rank()
 
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
