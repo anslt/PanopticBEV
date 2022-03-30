@@ -147,8 +147,11 @@ class FPNSemanticHeadDPC(nn.Module):
             self.pointwise = nn.Conv2d(in_channels, out_channels, 1, bias=bias)
 
         def forward(self, x):
+            print("000")
             x = self.depthwise(x)
+            print("001")
             x = self.pointwise(x)
+            print("002")
             return x
 
     class _3x3box(nn.Module):
