@@ -193,7 +193,8 @@ class DetectionAlgoFPN(DetectionAlgo):
 
         try:
             if proposals.all_none:
-                raise Empty
+                cls_loss = bbx_loss = sum(x_i.sum() for x_i in x) * 0
+                return cls_loss, bbx_loss
 
             with torch.no_grad():
                 # Match proposals to ground truth
@@ -201,7 +202,8 @@ class DetectionAlgoFPN(DetectionAlgo):
                 cls_lbl, bbx_lbl = self._match_to_lbl(proposals, bbx, cat, match)
                 
             if proposals.all_none:
-                raise Empty
+                cls_loss = bbx_loss = sum(x_i.sum() for x_i in x) * 0
+                return cls_loss, bbx_loss
 
             # Run head
             # set_active_group(head, active_group(True))
@@ -438,7 +440,10 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         try:
 
             if proposals.all_none:
-                raise Empty
+                cls_loss = bbx_loss = msk_loss = sum(x_i.sum() for x_i in x) * 0
+                batch_size = len(bbx)
+                cls_gt_logits, bbx_gt_logits, msk_gt_logits = [None] * batch_size, [None] * batch_size, [None] * batch_size
+                return cls_loss, bbx_loss, msk_loss, cls_gt_logits, bbx_gt_logits, msk_gt_logits
 
             # Match proposals to ground truth
             with torch.no_grad():
@@ -447,7 +452,11 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
             print(proposals.all_none)
             if proposals.all_none:
-                raise Empty
+                cls_loss = bbx_loss = msk_loss = sum(x_i.sum() for x_i in x) * 0
+                batch_size = len(bbx)
+                cls_gt_logits, bbx_gt_logits, msk_gt_logits = [None] * batch_size, [None] * batch_size, [None] * batch_size
+                return cls_loss, bbx_loss, msk_loss, cls_gt_logits, bbx_gt_logits, msk_gt_logits
+
 
             # Run head
             # if not self.debug:
