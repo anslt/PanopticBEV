@@ -436,7 +436,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
 
 
         try:
-            print(proposals.all_none)
+
             if proposals.all_none:
                 raise Empty
 
@@ -445,6 +445,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
                 proposals, match = self.proposal_matcher(proposals, bbx, cat, iscrowd)
                 cls_lbl, bbx_lbl, msk_lbl = self._match_to_lbl(proposals, bbx, cat, ids, msk, match)
 
+            print(proposals.all_none)
             if proposals.all_none:
                 raise Empty
 
