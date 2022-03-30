@@ -410,7 +410,6 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     model.train()
-    device_id = distributed.get_rank()
 
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
@@ -427,6 +426,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     for it, sample in enumerate(dataloader):
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
         sample['calib'], _ = pad_packed_images(sample['calib'])
+        print(sample["idx"])
 
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
@@ -484,7 +484,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         # Log to tensorboard and console
         # print(it)
-        if (it + 1) % varargs["log_interval"] == 0 and device_id == 0:
+        if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
                          epoch=varargs["epoch"], num_epochs=varargs['num_epochs'], lr=scheduler.get_lr()[0],
@@ -500,7 +500,6 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
 def validate(model, dataloader, **varargs):
     model.eval()
-    device_id=distributed.get_rank()
 
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
@@ -596,7 +595,7 @@ def validate(model, dataloader, **varargs):
                                                                                original_sizes=original_sizes)
 
             # Log batch to tensorboard and console
-            if (it + 1) % varargs["log_interval"] == 0 and device_id == 0:
+            if (it + 1) % varargs["log_interval"] == 0:
                 if varargs['summary'] is not None:
                     log_iter("val", val_meters, time_meters, results, None, global_step=varargs['global_step'],
                              epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None, curr_iter=it+1,
