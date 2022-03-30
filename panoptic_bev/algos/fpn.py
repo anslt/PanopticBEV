@@ -375,7 +375,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         # print("Img Size: ", img_size)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
-            print("Traget Level ", level_i, ": ", torch.sum(idx))
+            # print("Traget Level ", level_i, ": ", torch.sum(idx))
             # if x_i.get_device() == 1:
             #    torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
             # x_i = torch.load("x_i_"+str(level_i)+".pt")
@@ -384,16 +384,18 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        print("ROI00: ", torch.sum(rois[0,0]))
+        # print("ROI00: ", torch.sum(rois[0,0]))
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
         if rois.shape[0] == 1:
             prune = True
             rois = torch.cat([rois, rois], dim=0)
+        print("Before HEAD")
         cls_logits, bbx_logits, msk_logits = head(rois, do_cls_bbx, do_msk)
         # print(cls_logits.shape)
         # print(cls_logits)
+        print("After HEAD")
         if prune:
             if cls_logits is not None:
                 cls_logits = cls_logits[0, ...].unsqueeze(0)
