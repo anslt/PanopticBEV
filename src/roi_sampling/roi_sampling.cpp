@@ -2,6 +2,7 @@
 
 #include <torch/extension.h>
 #include <torch/torch.h>
+#include <c10/cuda/CUDAGuard.h>
 
 #include "utils/checks.h"
 #include "roi_sampling.h"
@@ -24,6 +25,7 @@ std::tuple<at::Tensor, at::Tensor> roi_sampling_forward(
     CHECK_CUDA(bbx);
     CHECK_CUDA(idx);
 
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
     return roi_sampling_forward_cuda(x, bbx, idx, out_size, interpolation, padding, valid_mask);
   } else {
     CHECK_CPU(bbx);
@@ -51,6 +53,7 @@ at::Tensor roi_sampling_backward(
     CHECK_CUDA(bbx);
     CHECK_CUDA(idx);
 
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(dy));
     return roi_sampling_backward_cuda(dy, bbx, idx, in_size, interpolation, padding);
   } else {
     CHECK_CPU(bbx);
