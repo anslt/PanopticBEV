@@ -447,7 +447,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         # Run network
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
-        print("SUCESSFUL LOAD ", distributed.get_rank())
+        # print("SUCESSFUL LOAD ", distributed.get_rank())
         if not varargs['debug']:
             distributed.barrier()
 
