@@ -193,10 +193,15 @@ class FPNSemanticHeadDPC(nn.Module):
 
         def forward(self, x):
             x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
+            print("After HEAD21")
             x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)))
+            print("After HEAD22")
             x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
+            print("After HEAD23")
             x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
+            print("After HEAD24")
             x4 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x3)))
+            print("After HEAD25")
             x = torch.cat([
                 x,
                 x1,
