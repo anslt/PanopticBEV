@@ -14,7 +14,7 @@ at::Tensor nms(const at::Tensor& bbx, const at::Tensor& scores, float threshold,
 
   at::Tensor comp_mat;
   if (bbx.is_cuda()) {
-    const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(bbx));
     comp_mat = comp_mat_cuda(bbx, threshold);
     comp_mat = comp_mat.toBackend(at::Backend::CPU);
   } else {

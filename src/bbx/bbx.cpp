@@ -7,7 +7,7 @@
 
 at::Tensor extract_boxes(const at::Tensor& mask, int n_instances){
   TORCH_CHECK(mask.ndimension() == 3, "Input mask should be 3D");
-  const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
+  const at::cuda::OptionalCUDAGuard device_guard(device_of(mask));
 
   at::Tensor bbx = at::full({n_instances, 4}, -1, mask.options().dtype(at::kFloat));
 
