@@ -192,27 +192,27 @@ class FPNSemanticHeadDPC(nn.Module):
         #            self._swish = MemoryEfficientSwish()
 
         def forward(self, x):
-            x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
+            x0 = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
             print("After HEAD21")
-            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)))
+            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x0)))
             print("After HEAD22")
-            x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
+            x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x0)))
             print("After HEAD23")
-            x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
+            x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x0)))
             print("After HEAD24")
             x4 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x3)))
             print("After HEAD25")
-            x = torch.cat([
-                x,
+            xf = torch.cat([
+                x0,
                 x1,
                 x2,
                 x3,
                 x4
             ], dim=1)
             print("After HEAD2")
-            x = self.conv2(x)
-            x = self.act2(self.bn2(x))
-            return x
+            xf = self.conv2(xf)
+            xf = self.act2(self.bn2(xf))
+            return xf
 
     def __init__(self,
                  in_channels,
