@@ -382,7 +382,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        print("ROI00: ", torch.sum(rois[0,0]))
+        # print("ROI00: ", torch.sum(rois[0,0]))
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
@@ -456,8 +456,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             # print(proposals.shape)
             # print(proposals)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
-            print(torch.sum(cls_logits))
-            exit()
+            # print(torch.sum(cls_logits))
+            # exit()
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)

@@ -202,7 +202,7 @@ class PanopticBevNet(nn.Module):
         else:
             obj_loss, bbx_loss, proposals = None, None, None
 
-        print(obj_loss)
+        # print(obj_loss)
         # print(len(proposals))
         # print(proposals[0].shape)
         # ROI Part
@@ -218,7 +218,7 @@ class PanopticBevNet(nn.Module):
                                                                                               img_size)
         else:
             bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
-        print(roi_cls_loss)
+        # print(roi_cls_loss)
         # Segmentation Part
         if do_loss:
             sem_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = self.sem_algo.training(self.sem_head, ms_bev,
