@@ -446,8 +446,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
 
         # Run network
-        print("SUCESSFUL LOAD ", device_id)
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
+        print("SUCESSFUL LOAD ", device_id)
         if not varargs['debug']:
             distributed.barrier()
 
