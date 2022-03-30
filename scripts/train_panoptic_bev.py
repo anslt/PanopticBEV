@@ -450,7 +450,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         losses = OrderedDict((k, v.mean()) for k, v in losses.items())
         losses["loss"] = sum(loss_weights[loss_name] * losses[loss_name] for loss_name in losses.keys())
-        # print(losses)
+        print(losses)
 
         # Increment the optimiser and back propagate the gradients
         optimizer.zero_grad()
@@ -480,7 +480,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         del losses, stats, sample
 
         # Log to tensorboard and console
-        ## print(it)
+        # print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
