@@ -389,11 +389,11 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         if rois.shape[0] == 1:
             prune = True
             rois = torch.cat([rois, rois], dim=0)
-        print("Before HEAD")
+        # print("Before HEAD")
         cls_logits, bbx_logits, msk_logits = head(rois, do_cls_bbx, do_msk)
         # print(cls_logits.shape)
         # print(cls_logits)
-        print("After HEAD")
+        # print("After HEAD")
         if prune:
             if cls_logits is not None:
                 cls_logits = cls_logits[0, ...].unsqueeze(0)

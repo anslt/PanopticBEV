@@ -293,6 +293,7 @@ class FPNSemanticHeadDPC(nn.Module):
         return roi_logits_list
 
     def forward(self, xs, bbx, img_size, roi=False):
+        print("Before HEAD")
         xs = xs[self.min_level:self.min_level + self.levels]
 
         ref_size = xs[0].shape[-2:]
@@ -322,7 +323,6 @@ class FPNSemanticHeadDPC(nn.Module):
         sem_feat = torch.cat(xs, dim=1)
         # print(sem_feat.shape)
         # print(sem_feat)
-        print("Before HEAD")
         xs = self.conv_sem(sem_feat)
         print("After HEAD")
 
