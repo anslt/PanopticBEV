@@ -202,7 +202,7 @@ class PanopticBevNet(nn.Module):
         else:
             obj_loss, bbx_loss, proposals = None, None, None
 
-        # print(obj_loss)
+        print(obj_loss)
         # print(len(proposals))
         # print(proposals[0].shape)
         # ROI Part

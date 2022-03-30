@@ -453,7 +453,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         losses = OrderedDict((k, v.mean()) for k, v in losses.items())
         losses["loss"] = sum(loss_weights[loss_name] * losses[loss_name] for loss_name in losses.keys())
-        print(losses)
+        # print(losses)
 
         # Increment the optimiser and back propagate the gradients
         optimizer.zero_grad()
@@ -491,7 +491,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
-        print("SUCESSFUL LOGGING")
+        # print("SUCESSFUL LOGGING")
         # exit()
 
     del results
