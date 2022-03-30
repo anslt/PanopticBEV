@@ -411,7 +411,7 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     model.train()
     device_id = distributed.get_rank()
-    
+
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
     optimizer.zero_grad()
@@ -446,6 +446,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
 
         # Run network
+        print("SUCESSFUL LOAD ", device_id)
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
         if not varargs['debug']:
             distributed.barrier()
@@ -490,7 +491,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
-        print("SUCESSFYL LOGGINH")
+        print("SUCESSFUL LOGGING")
         # exit()
 
     del results
