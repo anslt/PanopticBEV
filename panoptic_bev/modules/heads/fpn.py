@@ -322,7 +322,9 @@ class FPNSemanticHeadDPC(nn.Module):
         sem_feat = torch.cat(xs, dim=1)
         # print(sem_feat.shape)
         # print(sem_feat)
+        print("Before HEAD")
         xs = self.conv_sem(sem_feat)
+        print("After HEAD")
 
         if roi and bbx is not None:
             roi_logits = self._roi_head(sem_feat, bbx, img_size)
