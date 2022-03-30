@@ -424,9 +424,9 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
+        print(sample["idx"])
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
         sample['calib'], _ = pad_packed_images(sample['calib'])
-        print(sample["idx"])
 
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
