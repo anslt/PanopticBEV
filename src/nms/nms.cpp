@@ -3,6 +3,7 @@
 #include "nms.h"
 #include "utils/checks.h"
 #include <torch/torch.h>
+#include <c10/cuda/CUDAGuard.h>
 
 at::Tensor nms(const at::Tensor& bbx, const at::Tensor& scores, float threshold, int n_max) {
   // Check inputs
@@ -13,6 +14,7 @@ at::Tensor nms(const at::Tensor& bbx, const at::Tensor& scores, float threshold,
 
   at::Tensor comp_mat;
   if (bbx.is_cuda()) {
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(x));
     comp_mat = comp_mat_cuda(bbx, threshold);
     comp_mat = comp_mat.toBackend(at::Backend::CPU);
   } else {
