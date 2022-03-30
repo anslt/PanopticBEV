@@ -195,9 +195,11 @@ class FPNSemanticHeadDPC(nn.Module):
         def forward(self, x):
             x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
             print("After HEAD21")
-            y=self.conv1_3x3_2(x)
+            y1=self.conv1_3x3_2(x)
             print("AFter HEAD211")
-            x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(y))
+            y2=self.conv1_3x3_2_bn(y1)
+            print("AFter HEAD212")
+            x1 = self.conv1_3x3_2_act(y2)
             print("After HEAD22")
             x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
             print("After HEAD23")
