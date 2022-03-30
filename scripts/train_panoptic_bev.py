@@ -410,6 +410,7 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 def train(model, optimizer, scheduler, dataloader, meters, **varargs):
     model.train()
+    device_id = model.get_device()
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
     optimizer.zero_grad()
@@ -481,13 +482,14 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         # Log to tensorboard and console
         # print(it)
-        if (it + 1) % varargs["log_interval"] == 0:
+        if (it + 1) % varargs["log_interval"] == 0 and device_id == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
                          epoch=varargs["epoch"], num_epochs=varargs['num_epochs'], lr=scheduler.get_lr()[0],
                          curr_iter=it+1, num_iters=len(dataloader), summary=varargs['summary'])
 
         data_time = time.time()
+        print("SUCESSFYL LOGGINH")
         # exit()
 
     del results
@@ -496,6 +498,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
 def validate(model, dataloader, **varargs):
     model.eval()
+    device_id=model.get_device()
 
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
@@ -591,7 +594,7 @@ def validate(model, dataloader, **varargs):
                                                                                original_sizes=original_sizes)
 
             # Log batch to tensorboard and console
-            if (it + 1) % varargs["log_interval"] == 0:
+            if (it + 1) % varargs["log_interval"] == 0 and device_id == 0:
                 if varargs['summary'] is not None:
                     log_iter("val", val_meters, time_meters, results, None, global_step=varargs['global_step'],
                              epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None, curr_iter=it+1,
