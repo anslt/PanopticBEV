@@ -193,7 +193,6 @@ class FPNSemanticHeadDPC(nn.Module):
 
         def forward(self, x):
             x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
-            print("After HEAD2")
             x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)))
             x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
             x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
@@ -205,6 +204,7 @@ class FPNSemanticHeadDPC(nn.Module):
                 x3,
                 x4
             ], dim=1)
+            print("After HEAD2")
             x = self.conv2(x)
             x = self.act2(self.bn2(x))
             return x
