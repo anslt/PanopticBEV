@@ -303,8 +303,10 @@ class FPNSemanticHeadDPC(nn.Module):
 
         i = self.min_level + self.levels - 1
         js = 0
+        print("After HEAD1")
         for output in self.output_1:
             xs[i] = output(xs[i])
+            print("After HEAD2")
             i = i - 1
         interm = self.pre_process[js](
             xs[i + 1] + functional.interpolate(xs[i + 2], size=xs[i + 1].shape[-2:], **interp_params))
@@ -324,7 +326,7 @@ class FPNSemanticHeadDPC(nn.Module):
         # print(sem_feat.shape)
         # print(sem_feat)
         xs = self.conv_sem(sem_feat)
-        print("After HEAD")
+
 
         if roi and bbx is not None:
             roi_logits = self._roi_head(sem_feat, bbx, img_size)
