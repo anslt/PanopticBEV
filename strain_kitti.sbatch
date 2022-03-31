@@ -19,7 +19,7 @@ if [ -d "$BUILD1" ]; then
 fi
 
 if [ -d "$BUILD2" ]; then
-    rm -rf "$BUILD1"
+    rm -rf "$BUILD2"
 fi
 
 python3 setup.py develop
