@@ -11,6 +11,19 @@
 
 module load cuda/11.1 cudnn
 
+BUILD1=build/
+BUILD2=PanopticBEV.egg-info/
+
+if [ -d "$BUILD1" ]; then
+    rm -rf "$BUILD1"
+fi
+
+if [ -d "$BUILD2" ]; then
+    rm -rf "$BUILD1"
+fi
+
+python3 setup.py develop
+
 CUDA_VISIBLE_DEVICES=0,1 \
 python3 -m torch.distributed.launch --nproc_per_node=2 --master_port=29621 scripts/train_panoptic_bev.py \
     --run_name=kitti360_ipm_`date +"%Y_%m_%d_%H_%M_%S"` \
