@@ -3,6 +3,7 @@
 #include "bbx.h"
 #include "utils/checks.h"
 #include <torch/torch.h>
+#include <c10/cuda/CUDAGuard.h>
 
 at::Tensor extract_boxes(const at::Tensor& mask, int n_instances){
   TORCH_CHECK(mask.ndimension() == 3, "Input mask should be 3D");
@@ -37,6 +38,7 @@ at::Tensor mask_count(const at::Tensor& bbx, const at::Tensor& int_mask) {
   TORCH_CHECK(int_mask.ndimension() == 2, "Input mask should be 2D");
 
   if (bbx.is_cuda()) {
+    const at::cuda::OptionalCUDAGuard device_guard(device_of(bbx));
     return mask_count_cuda(bbx, int_mask);
   } else {
     return mask_count_cpu(bbx, int_mask);
