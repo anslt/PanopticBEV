@@ -126,9 +126,9 @@ class FlatTransformer(nn.Module):
         # Account for the errors made by the IPM part of the flat transformer
         # self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
 
-        self.f_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                                 norm_act(f_2d_ch),
-                                                 nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
+        # self.f_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
+        #                                          norm_act(f_2d_ch),
+        #                                          nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
 
         # self.ipm_confident_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
         #                                                      norm_act(f_2d_ch),
@@ -292,9 +292,9 @@ class TransformerVF(nn.Module):
         # /2 to centre the car in the image vertically
         extents = [-(self.W_out * resolution / 2), 0, (self.W_out * resolution / 2), self.Z_out * resolution]
 
-        ## self.v_transform = VerticalTransformer(in_ch=tfm_ch, v_2d_ch=tfm_ch // 2, v_3d_ch=tfm_ch // 2, img_size_in=(H_in, W_in),
-        ##                                        img_size_out=(Z_out, W_out), extents=extents, img_scale=img_scale,
-        ##                                        resolution=resolution, norm_act=norm_act)
+        # self.v_transform = VerticalTransformer(in_ch=tfm_ch, v_2d_ch=tfm_ch // 2, v_3d_ch=tfm_ch // 2, img_size_in=(H_in, W_in),
+        #                                        img_size_out=(Z_out, W_out), extents=extents, img_scale=img_scale,
+        #                                        resolution=resolution, norm_act=norm_act)
 
         self.f_transform = FlatTransformer(tfm_ch, tfm_ch, extrinsics, bev_params, (H_in, W_in), (W_out, Z_out),
                                            img_scale, extents, resolution, norm_act)

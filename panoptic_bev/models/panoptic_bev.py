@@ -151,11 +151,11 @@ class PanopticBevNet(nn.Module):
         if do_loss:
             # Prepare the input data and the ground truth labels
             cat, iscrowd, bbx, ids, sem_gt, po_gt, po_gt_vis = self.prepare_inputs(bev_msk, cat, iscrowd, bbx)
-            if self.dataset == "Kitti360":
-                vf_mask_gt = [self.make_vf_mask(front_msk)]
-            elif self.dataset == "nuScenes":
-                vf_mask_gt = [front_msk]  # List to take care of the "rgb_cameras"
-            v_region_mask_gt, f_region_mask_gt = self.make_region_mask(sem_gt)
+            # if self.dataset == "Kitti360":
+            #     vf_mask_gt = [self.make_vf_mask(front_msk)]
+            # elif self.dataset == "nuScenes":
+            #     vf_mask_gt = [front_msk]  # List to take care of the "rgb_cameras"
+            # v_region_mask_gt, f_region_mask_gt = self.make_region_mask(sem_gt)
             ## torch.save(v_region_mask_gt.cpu(), "ex/v_gt.pt")
             ## torch.save(f_region_mask_gt.cpu(), "ex/f_gt.pt")
             # v_region_mask_gt = [v_region_mask_gt]
