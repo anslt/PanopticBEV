@@ -158,8 +158,8 @@ class PanopticBevNet(nn.Module):
             v_region_mask_gt, f_region_mask_gt = self.make_region_mask(sem_gt)
             ## torch.save(v_region_mask_gt.cpu(), "ex/v_gt.pt")
             ## torch.save(f_region_mask_gt.cpu(), "ex/f_gt.pt")
-            v_region_mask_gt = [v_region_mask_gt]
-            f_region_mask_gt = [f_region_mask_gt]
+            # v_region_mask_gt = [v_region_mask_gt]
+            # f_region_mask_gt = [f_region_mask_gt]
         else:
             po_gt, po_gt_vis = None, None
 

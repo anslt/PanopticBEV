@@ -189,11 +189,11 @@ class FlatTransformer(nn.Module):
         f_feat = feat_bev_ipm # + feat_bev_ecm
         ## print(f_feat.size())
         f_feat = f_feat + self.post_process_residual(f_feat)
-        f_logits = self.f_region_estimation(f_feat)
+        # f_logits = self.f_region_estimation(f_feat)
         f_feat = self.ch_mapper_out(f_feat)
         ## print(f_logits.size())
 
-        return f_feat, f_logits
+        return f_feat, None
 
 
 class MergeFeaturesVF(nn.Module):
@@ -344,7 +344,6 @@ class TransformerVF(nn.Module):
         feat_merged = torch.rot90(feat_merged, k=1, dims=[2, 3])
         # v_region_logits = torch.rot90(v_region_logits, k=1, dims=[2, 3])
         # f_region_logits = torch.rot90(f_region_logits, k=1, dims=[2, 3])
-        vf_logits = 0
-        v_region_logits = 0
 
-        return feat_merged, vf_logits, v_region_logits, f_region_logits
+
+        return feat_merged, None, None, None
