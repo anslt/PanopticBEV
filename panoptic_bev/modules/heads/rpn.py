@@ -24,8 +24,7 @@ class RPNHead(nn.Module):
         super(RPNHead, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels, hidden_channels, 3, padding=1, stride=stride, bias=False)
-        self.bn1 = nn.BatchNorm2d(hidden_channels)
-        self.act1 = nn.LeakyReLU(0.01, inplace=True)
+        self.bn1 = norm_act(hidden_channels)
 
         self.conv_obj = nn.Conv2d(hidden_channels, num_anchors, 1)
         self.conv_bbx = nn.Conv2d(hidden_channels, num_anchors * 4, 1)
@@ -33,11 +32,11 @@ class RPNHead(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        # activation = self.bn1.activation
-        # activation_param = self.bn1.activation_param
+        activation = self.bn1.activation
+        activation_param = self.bn1.activation_param
 
         # Hidden convolution
-        gain = nn.init.calculate_gain('leaky_relu', 0.01)
+        gain = nn.init.calculate_gain(activation, activation_param)
         nn.init.xavier_normal_(self.conv1.weight, gain)
         self.bn1.reset_parameters()
 
@@ -63,5 +62,5 @@ class RPNHead(nn.Module):
         """
 
         x = self.conv1(x)
-        x = self.act1(self.bn1(x))
+        x = self.bn1(x)
         return self.conv_obj(x), self.conv_bbx(x)
