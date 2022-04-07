@@ -1,5 +1,5 @@
 import torch
-# from inplace_abn import active_group, set_active_group
+from inplace_abn import active_group, set_active_group
 
 from panoptic_bev.utils.bbx import shift_boxes
 from panoptic_bev.utils.misc import Empty
@@ -204,13 +204,13 @@ class DetectionAlgoFPN(DetectionAlgo):
                 raise Empty
 
             # Run head
-            # set_active_group(head, active_group(True))
+            set_active_group(head, active_group(True))
             proposals, proposals_idx = proposals.contiguous
             cls_logits, bbx_logits = self._head(head, x, proposals, proposals_idx, img_size)
             # Calculate loss
             cls_loss, bbx_loss = self.loss(cls_logits, bbx_logits, cls_lbl, bbx_lbl)
         except Empty:
-            # active_group(False)
+            active_group(False)
             cls_loss = bbx_loss = sum(x_i.sum() for x_i in x) * 0
 
         return cls_loss, bbx_loss
@@ -307,13 +307,7 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _rois(self, x, proposals, proposals_idx, img_size):
         stride = proposals.new([fs / os for fs, os in zip(x.shape[-2:], img_size)])
         proposals = (proposals - 0.5) * stride.repeat(2) + 0.5
-        # print(proposals.device)
-        # print(x.device)
-        # print("ISNAN: ", torch.sum(torch.isnan(proposals_idx)))
-        output = roi_sampling(x, proposals, proposals_idx, self.roi_size)
-        # print(output.device)
-        # print("SUM: ", torch.sum(output))
-        return output
+        return roi_sampling(x, proposals, proposals_idx, self.roi_size)
 
     def _head1(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
@@ -349,51 +343,21 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
     def _head(self, head, x, proposals, proposals_idx, img_size, do_cls_bbx, do_msk):
         # Find target levels
         target_level = self._target_level(proposals)
-        # device = proposals.device
-        #print(torch.mean(proposals[:, 2:] - proposals[:, :2], dim = 0))
-        #print(torch.std(proposals[:, 2:] - proposals[:, :2], dim = 0))
-
 
         # Sample rois
         rois = x[0].new_zeros(proposals.size(0), x[0].size(1), self.roi_size[0], self.roi_size[1])
-        # print(rois.shape)
-        # if proposals.get_device() == 1:
-        #    torch.save(proposals.cpu(), "proposals.pt")
-        #    torch.save(proposals_idx.cpu(), "proposals_idx.pt")
-        # proposals = torch.load("proposals.pt")
-        # proposals_idx = torch.load("proposals_idx.pt")
-        # proposals = proposals.to(device)
-        # proposals_idx = proposals_idx.to(device)
-        # target_level = self._target_level(proposals)
-        # print(proposals)
-        # print("Level 0: ", torch.sum(target_level == 0))
-        # print("Level 1: ", torch.sum(target_level == 1))
-        # print("Level 2: ", torch.sum(target_level == 2))
-        # print("Level 3: ", torch.sum(target_level == 3))
-        # print("Img Size: ", img_size)
         for level_i, x_i in enumerate(x):
             idx = target_level == (level_i + self.min_level)
-            # print("Traget Level ", level_i, ": ", torch.sum(idx))
-            # if x_i.get_device() == 1:
-            #    torch.save(x_i.cpu(), "x_i_"+str(level_i)+".pt")
-            # x_i = torch.load("x_i_"+str(level_i)+".pt")
-            # x_i = x_i.to(device)
-
             if idx.any().item():
                 rois[idx] = self._rois(x_i, proposals[idx], proposals_idx[idx], img_size)
 
-        # print("ROI00: ", torch.sum(rois[0,0]))
         # Run head
         # This is to prevent batch norm from crashing when there is only ony proposal.
         prune = False
         if rois.shape[0] == 1:
             prune = True
             rois = torch.cat([rois, rois], dim=0)
-        # print("Before HEAD")
         cls_logits, bbx_logits, msk_logits = head(rois, do_cls_bbx, do_msk)
-        # print(cls_logits.shape)
-        # print(cls_logits)
-        # print("After HEAD")
         if prune:
             if cls_logits is not None:
                 cls_logits = cls_logits[0, ...].unsqueeze(0)
@@ -433,12 +397,9 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
         return cls_gt_list, bbx_gt_list, msk_gt_list
 
     def training(self, head, x, proposals, bbx, cat, iscrowd, ids, msk, img_size):
-        # print(x[0].shape)
         x = x[self.min_level:self.min_level + self.levels]
-
-
+        
         try:
-
             if proposals.all_none:
                 raise Empty
 
@@ -447,22 +408,16 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
                 proposals, match = self.proposal_matcher(proposals, bbx, cat, iscrowd)
                 cls_lbl, bbx_lbl, msk_lbl = self._match_to_lbl(proposals, bbx, cat, ids, msk, match)
 
-            print(proposals.all_none)
             if proposals.all_none:
                 raise Empty
 
             # Run head
-            # if not self.debug:
-            #    # set_active_group(head, active_group(True))
-            #    pass
-            #else:
-            #    pass
+            if not self.debug:
+                set_active_group(head, active_group(True))
+            else:
+                pass
             proposals, proposals_idx = proposals.contiguous
-            # print(proposals.shape)
-            # print(proposals)
             cls_logits, bbx_logits, msk_logits = self._head(head, x, proposals, proposals_idx, img_size, True, True)
-            # print(torch.sum(cls_logits))
-            # exit()
 
             # Predict the masks using the ground truth. This is used for the panoptic fusion
             batch_size = len(bbx)
@@ -474,11 +429,9 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             else:
                 bbx_gt, bbx_gt_idx = bbx_ps.contiguous
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._head(head, x, bbx_gt, bbx_gt_idx, img_size, True, True)
-                # print(cls_gt_logits)
                 cls_gt_logits, bbx_gt_logits, msk_gt_logits = self._make_batch_list(cls_gt_logits, bbx_gt_logits,
                                                                                     msk_gt_logits, bbx_gt_idx,
                                                                                     batch_size)
-            # print(cls_gt_logits)
             cls_gt_logits = PackedSequence(cls_gt_logits)
             bbx_gt_logits = PackedSequence(bbx_gt_logits)
             msk_gt_logits = PackedSequence(msk_gt_logits)
@@ -488,8 +441,8 @@ class InstanceSegAlgoFPN(InstanceSegAlgo):
             msk_loss = self.msk_loss(msk_logits, cls_lbl, msk_lbl)
 
         except Empty:
-            # if not self.debug:
-            #    active_group(False)
+            if not self.debug:
+                active_group(False)
             cls_loss = bbx_loss = msk_loss = sum(x_i.sum() for x_i in x) * 0
             batch_size = len(bbx)
             cls_gt_logits, bbx_gt_logits, msk_gt_logits = [None] * batch_size, [None] * batch_size, [None] * batch_size

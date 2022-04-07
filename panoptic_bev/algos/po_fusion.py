@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn.functional as F
 from panoptic_bev.utils.parallel import PackedSequence

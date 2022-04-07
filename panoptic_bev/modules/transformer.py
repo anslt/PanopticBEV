@@ -16,26 +16,26 @@ class VerticalTransformer(nn.Module):
         self.Z_out = Z_out = int(img_size_out[0] * img_scale)
 
         self.ch_mapper_in = nn.Sequential(nn.Conv2d(in_ch, v_2d_ch, 1, padding=0, bias=False),
-                                          nn.BatchNorm3d(v_2d_ch), nn.LeakyReLU(0.01, inplace=True))
+                                          norm_act(v_2d_ch))
 
         self.depth_extender = nn.Sequential(nn.Conv3d(1, Z_out, 3, 1, 1),
-                                            nn.BatchNorm3d(Z_out), nn.LeakyReLU(0.01, inplace=True))
+                                            norm_act(Z_out))
         self.height_flattener = nn.Sequential(nn.Conv3d(H_in, 1, 3, 1, 1),
-                                              nn.BatchNorm3d(1), nn.LeakyReLU(0.01, inplace=True))
+                                              norm_act(1))
 
         self.ch_mapper_out = nn.Sequential(nn.Conv2d(v_2d_ch, in_ch, 1, padding=0, bias=False),
-                                           nn.BatchNorm2d(in_ch), nn.LeakyReLU(0.01, inplace=True))
+                                           norm_act(in_ch))
 
         # Supervised Spatial Attention
         self.depth_estimation = nn.Sequential(nn.Conv2d(in_ch, Z_out, 3, 1, 1, bias=False),
-                                              nn.BatchNorm2d(Z_out), nn.LeakyReLU(0.01, inplace=True),
+                                              norm_act(Z_out),
                                               nn.Conv2d(Z_out, Z_out, 3, 1, 1, bias=False),
-                                              nn.BatchNorm2d(Z_out), nn.LeakyReLU(0.01, inplace=True),
+                                              norm_act(Z_out),
                                               nn.Conv2d(Z_out, Z_out, 3, 1, 1, bias=False),
-                                              nn.BatchNorm2d(Z_out), nn.LeakyReLU(0.01, inplace=True))
+                                              norm_act(Z_out))
 
         self.v_region_estimation = nn.Sequential(nn.Conv2d(H_in, H_in, 3, padding=1),
-                                                 nn.BatchNorm2d(H_in), nn.LeakyReLU(0.01, inplace=True),
+                                                 norm_act(H_in),
                                                  nn.Conv2d(H_in, 1, 1, 1, padding=0))
 
         # Function to unwarp the perspective distortion of vertical features
@@ -58,7 +58,7 @@ class VerticalTransformer(nn.Module):
 
         # Transform the vertical features in the FV to the BEV
         v_feat = v_feat.unsqueeze(1)  # Add a new dimension for applying 3D convolutions
-        v_feat = self.depth_extender_dummy(self.depth_extender(v_feat.contiguous()))  # Create the volumetric lattice. Shape --> N x 1 x C_2d x H x W
+        v_feat = self.depth_extender_dummy(self.depth_extender(v_feat)).contiguous()   # Create the volumetric lattice. Shape --> N x 1 x C_2d x H x W
         B, C_3d, C_2d, _, W = v_feat.shape  # Shape --> N x C_3d x C_2d x H x W
         v_feat = v_feat.permute(0, 2, 3, 1, 4).contiguous()  # Shape --> N x C_2d x H x C_3d x W
         v_feat = v_feat * v_region_attention  # Apply the depth-based spatial attention mask across all channels
@@ -118,26 +118,26 @@ class FlatTransformer(nn.Module):
         self.Z_out = out_img_size[1] * img_scale
 
         self.ch_mapper_in = nn.Sequential(nn.Conv2d(in_ch, f_2d_ch, 1, padding=0, bias=False),
-                                          nn.BatchNorm2d(f_2d_ch), nn.LeakyReLU(0.01, inplace=True))
+                                          norm_act(f_2d_ch))
 
         self.ch_mapper_out = nn.Sequential(nn.Conv2d(f_2d_ch, in_ch, 1, padding=0, bias=False),
-                                           nn.BatchNorm2d(in_ch), nn.LeakyReLU(0.01, inplace=True))
+                                           norm_act(in_ch))
 
         # Account for the errors made by the IPM part of the flat transformer
         self.ecm = ErrorCorrectionModule(f_2d_ch, f_2d_ch, in_img_size, out_img_size, img_scale, norm_act)
 
         self.f_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                                 nn.BatchNorm2d(f_2d_ch), nn.LeakyReLU(0.01, inplace=True),
+                                                 norm_act(f_2d_ch),
                                                  nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
 
         self.ipm_confident_region_estimation = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                                             nn.BatchNorm2d(f_2d_ch), nn.LeakyReLU(0.01, inplace=True),
+                                                             norm_act(f_2d_ch),
                                                              nn.Conv2d(f_2d_ch, 1, 1, 1, padding=0))
 
         self.post_process_residual = nn.Sequential(nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                          nn.BatchNorm2d(f_2d_ch), nn.LeakyReLU(0.01, inplace=True),
+                                          norm_act(f_2d_ch),
                                           nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1),
-                                          nn.BatchNorm2d(f_2d_ch), nn.LeakyReLU(0.01, inplace=True),
+                                          norm_act(f_2d_ch),
                                           nn.Conv2d(f_2d_ch, f_2d_ch, 3, padding=1))
 
         self.f_dummy = nn.Conv2d(f_2d_ch, f_2d_ch, 1, bias=False)
@@ -200,13 +200,13 @@ class MergeFeaturesVF(nn.Module):
         super(MergeFeaturesVF, self).__init__()
 
         self.preprocess_v = nn.Sequential(nn.Conv2d(in_ch, in_ch, 3, 1, 1, bias=False),
-                                          nn.BatchNorm2d(in_ch), nn.LeakyReLU(0.01, inplace=True))
+                                          norm_act(in_ch))
 
         self.preprocess_f = nn.Sequential(nn.Conv2d(in_ch, in_ch, 3, 1, 1, bias=False),
-                                          nn.BatchNorm2d(in_ch), nn.LeakyReLU(0.01, inplace=True))
+                                          norm_act(in_ch))
 
         self.merge_vf = nn.Sequential(nn.Conv2d(2 * in_ch, in_ch, 3, 1, 1, bias=False),
-                                      nn.BatchNorm2d(in_ch), nn.LeakyReLU(0.01, inplace=True))
+                                      norm_act(in_ch))
 
     def forward(self, feat_v, feat_f):
         pp_v = self.preprocess_v(feat_v)
@@ -273,14 +273,14 @@ class TransformerVF(nn.Module):
         self.img_scale = img_scale
 
         self.ch_mapper_in = nn.Sequential(nn.Conv2d(in_ch, tfm_ch, 1, padding=0, bias=False),
-                                          nn.BatchNorm2d(tfm_ch), nn.LeakyReLU(0.01, inplace=True))
+                                          norm_act(tfm_ch))
 
         self.vf_estimation = nn.Sequential(nn.Conv2d(tfm_ch, tfm_ch//2, 1, 1, padding=0, bias=False),
-                                           nn.BatchNorm2d(tfm_ch//2), nn.LeakyReLU(0.01, inplace=True),
+                                           norm_act(tfm_ch//2),
                                            nn.Conv2d(tfm_ch//2, tfm_ch//2, 3, 1, padding=1, bias=False),
-                                           nn.BatchNorm2d(tfm_ch//2), nn.LeakyReLU(0.01, inplace=True),
+                                           norm_act(tfm_ch//2),
                                            nn.Conv2d(tfm_ch // 2, tfm_ch // 2, 3, 1, padding=1, bias=False),
-                                           nn.BatchNorm2d(tfm_ch // 2), nn.LeakyReLU(0.01, inplace=True),
+                                           norm_act(tfm_ch // 2),
                                            nn.Conv2d(tfm_ch//2, 2, 1, 1, padding=0, bias=False))
 
         self.Z_out = int(Z_out * img_scale)
@@ -300,7 +300,7 @@ class TransformerVF(nn.Module):
         self.merge_feat_vf = MergeFeaturesVF(tfm_ch, norm_act=norm_act)
 
         self.ch_mapper_out = nn.Sequential(nn.Conv2d(tfm_ch, out_ch, 1, padding=0, bias=False),
-                                           nn.BatchNorm2d(out_ch), nn.LeakyReLU(0.01, inplace=True))
+                                           norm_act(out_ch))
 
         # Placeholder to prevent ABNSync from crashing on backward()
         self.dummy = nn.Conv2d(out_ch, out_ch, 1, padding=0, bias=False)
