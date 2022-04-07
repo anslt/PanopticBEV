@@ -11,6 +11,7 @@
 
 module load cuda/11.1 cudnn
 
+
 CUDA_VISIBLE_DEVICES=0,1,2,3 \
 CUDA_LAUNCH_BLOCKING=1 \
 python3 -m torch.distributed.launch --nproc_per_node=4 --master_port=29521 scripts/train_panoptic_bev.py \
