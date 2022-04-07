@@ -577,6 +577,7 @@ def validate(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
+            break
 
     # Finalise Panoptic mIoU computation
     # po_conf_mat = po_conf_mat.to(device=varargs["device"])
@@ -717,6 +718,18 @@ def main(args):
         log_info("Starting epoch %d", epoch + 1, debug=args.debug)
         if not batch_update:
             scheduler.step(epoch)
+
+        score = validate(model, val_dataloader, device=device, summary=summary, global_step=global_step,
+                         epoch=epoch, num_epochs=total_epochs, log_interval=config["general"].getint("log_interval"),
+                         loss_weights=config['optimizer'].getstruct("loss_weights"),
+                         front_vertical_classes=config['transformer'].getstruct('front_vertical_classes'),
+                         front_flat_classes=config['transformer'].getstruct('front_flat_classes'),
+                         bev_vertical_classes=config['transformer'].getstruct('bev_vertical_classes'),
+                         bev_flat_classes=config['transformer'].getstruct('bev_flat_classes'),
+                         rgb_mean=config['dataloader'].getstruct('rgb_mean'),
+                         rgb_std=config['dataloader'].getstruct('rgb_std'),
+                         img_scale=config['dataloader'].getfloat('scale'),
+                         debug=args.debug)
 
         # Run training epoch
         global_step = train(model, optimizer, scheduler, train_dataloader, train_meters,
