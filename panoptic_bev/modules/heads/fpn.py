@@ -193,15 +193,15 @@ class FPNSemanticHeadDPC(nn.Module):
 
         def forward(self, x):
             x = self.conv1_3x3_1_act(self.conv1_3x3_1_bn(self.conv1_3x3_1(x)))
-            print("After HEAD21")
+            # print("After HEAD21")
             x1 = self.conv1_3x3_2_act(self.conv1_3x3_2_bn(self.conv1_3x3_2(x)))
-            print("After HEAD22")
+            # print("After HEAD22")
             x2 = self.conv1_3x3_3_act(self.conv1_3x3_3_bn(self.conv1_3x3_3(x)))
-            print("After HEAD23")
+            # print("After HEAD23")
             x3 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x)))
-            print("After HEAD24")
+            # print("After HEAD24")
             x4 = self.conv1_3x3_4_act(self.conv1_3x3_4_bn(self.conv1_3x3_4(x3)))
-            print("After HEAD25")
+            # print("After HEAD25")
             x = torch.cat([
                 x,
                 x1,
@@ -209,7 +209,7 @@ class FPNSemanticHeadDPC(nn.Module):
                 x3,
                 x4
             ], dim=1)
-            print("After HEAD2")
+            # print("After HEAD2")
             x = self.conv2(x)
             x = self.act2(self.bn2(x))
             return x
@@ -299,7 +299,7 @@ class FPNSemanticHeadDPC(nn.Module):
         return roi_logits_list
 
     def forward(self, xs, bbx, img_size, roi=False):
-        print("Before HEAD")
+        # print("Before HEAD")
         xs = xs[self.min_level:self.min_level + self.levels]
 
         ref_size = xs[0].shape[-2:]
