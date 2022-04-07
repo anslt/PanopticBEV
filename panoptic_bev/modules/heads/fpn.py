@@ -309,7 +309,7 @@ class FPNSemanticHeadDPC(nn.Module):
 
         i = self.min_level + self.levels - 1
         js = 0
-        print("After HEAD1")
+        # print("After HEAD1")
         for output in self.output_1:
             xs[i] = output(xs[i])
             i = i - 1
