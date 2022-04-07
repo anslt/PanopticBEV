@@ -468,6 +468,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         data_time = time.time()
         # print("SUCESSFUL LOGGING")
         # exit()
+        if (it + 1) % varargs["log_interval"] == 0:
+            break
 
     del results
     return global_step
@@ -718,18 +720,6 @@ def main(args):
         log_info("Starting epoch %d", epoch + 1, debug=args.debug)
         if not batch_update:
             scheduler.step(epoch)
-
-        score = validate(model, val_dataloader, device=device, summary=summary, global_step=global_step,
-                         epoch=epoch, num_epochs=total_epochs, log_interval=config["general"].getint("log_interval"),
-                         loss_weights=config['optimizer'].getstruct("loss_weights"),
-                         front_vertical_classes=config['transformer'].getstruct('front_vertical_classes'),
-                         front_flat_classes=config['transformer'].getstruct('front_flat_classes'),
-                         bev_vertical_classes=config['transformer'].getstruct('bev_vertical_classes'),
-                         bev_flat_classes=config['transformer'].getstruct('bev_flat_classes'),
-                         rgb_mean=config['dataloader'].getstruct('rgb_mean'),
-                         rgb_std=config['dataloader'].getstruct('rgb_std'),
-                         img_scale=config['dataloader'].getfloat('scale'),
-                         debug=args.debug)
 
         # Run training epoch
         global_step = train(model, optimizer, scheduler, train_dataloader, train_meters,
