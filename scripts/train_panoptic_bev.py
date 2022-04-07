@@ -468,8 +468,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         data_time = time.time()
         # print("SUCESSFUL LOGGING")
         # exit()
-        if (it + 1) % varargs["log_interval"] == 0:
-            break
+        # if (it + 1) % varargs["log_interval"] == 0:
+        #    break
 
     del results
     return global_step
@@ -579,7 +579,7 @@ def validate(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
-            break
+            # break
 
     # Finalise Panoptic mIoU computation
     # po_conf_mat = po_conf_mat.to(device=varargs["device"])
@@ -620,7 +620,7 @@ def validate(model, dataloader, **varargs):
     log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
     log_scores("Panoptic Scores", scores)
 
-    return 0.0
+    return scores['sem_miou'].item()
 
 
 def main(args):
