@@ -251,48 +251,23 @@ def make_model(args, config, num_thing, num_stuff):
     transformer_algo = TransformerVFAlgo(vf_loss, region_supervision_loss)
 
     # Create RPN
-    proposal_generator = ProposalGenerator(rpn_config.getfloat("nms_threshold"),
-                                           rpn_config.getint("num_pre_nms_train"),
-                                           rpn_config.getint("num_post_nms_train"),
-                                           rpn_config.getint("num_pre_nms_val"),
-                                           rpn_config.getint("num_post_nms_val"),
-                                           rpn_config.getint("min_size"))
-    anchor_matcher = AnchorMatcher(rpn_config.getint("num_samples"),
-                                   rpn_config.getfloat("pos_ratio"),
-                                   rpn_config.getfloat("pos_threshold"),
-                                   rpn_config.getfloat("neg_threshold"),
-                                   rpn_config.getfloat("void_threshold"))
-    rpn_loss = RPNLoss(rpn_config.getfloat("sigma"))
-    anchor_scales = [int(scale) for scale in rpn_config.getstruct('anchor_scale')]
-    anchor_ratios = [float(ratio) for ratio in rpn_config.getstruct('anchor_ratios')]
-    rpn_algo = RPNAlgoFPN(proposal_generator, anchor_matcher, rpn_loss, anchor_scales, anchor_ratios,
-                          fpn_config.getstruct("out_strides"), rpn_config.getint("fpn_min_level"),
-                          rpn_config.getint("fpn_levels"))
-    rpn_head = RPNHead(transformer_config.getint("bev_ms_channels"), int(len(anchor_scales) * len(anchor_ratios)), 1,
-                       rpn_config.getint("hidden_channels"), norm_act_dynamic)
-
+    proposal_generator = None
+    anchor_matcher = None
+    rpn_loss = None
+    anchor_scales = None
+    anchor_ratios = None
+    rpn_algo = None
+    rpn_head = None
     # Create instance segmentation network
-    bbx_prediction_generator = BbxPredictionGenerator(roi_config.getfloat("nms_threshold"),
-                                                      roi_config.getfloat("score_threshold"),
-                                                      roi_config.getint("max_predictions"),
-                                                      dataset_name=args.train_dataset)
-    msk_prediction_generator = MskPredictionGenerator()
-    roi_size = roi_config.getstruct("roi_size")
-    proposal_matcher = ProposalMatcher(classes,
-                                       roi_config.getint("num_samples"),
-                                       roi_config.getfloat("pos_ratio"),
-                                       roi_config.getfloat("pos_threshold"),
-                                       roi_config.getfloat("neg_threshold_hi"),
-                                       roi_config.getfloat("neg_threshold_lo"),
-                                       roi_config.getfloat("void_threshold"))
-    bbx_loss = DetectionLoss(roi_config.getfloat("sigma"))
-    msk_loss = InstanceSegLoss()
-    lbl_roi_size = tuple(s * 2 for s in roi_size)
-    roi_algo = InstanceSegAlgoFPN(bbx_prediction_generator, msk_prediction_generator, proposal_matcher, bbx_loss, msk_loss, classes,
-                                  roi_config.getstruct("bbx_reg_weights"), roi_config.getint("fpn_canonical_scale"),
-                                  roi_config.getint("fpn_canonical_level"), roi_size, roi_config.getint("fpn_min_level"),
-                                  roi_config.getint("fpn_levels"), lbl_roi_size, roi_config.getboolean("void_is_background"), args.debug)
-    roi_head = FPNMaskHead(transformer_config.getint("bev_ms_channels"), classes, roi_size, norm_act=norm_act_dynamic)
+    bbx_prediction_generator = None
+    msk_prediction_generator = None
+    roi_size = None
+    proposal_matcher = None
+    bbx_loss = None
+    msk_loss = None
+    lbl_roi_size = None
+    roi_algo = None
+    roi_head = None
 
     # Create semantic segmentation network
     W_out = int(dl_config.getstruct("bev_crop")[0] * dl_config.getfloat("scale"))
@@ -310,8 +285,8 @@ def make_model(args, config, num_thing, num_stuff):
                                   norm_act=norm_act_static)
 
     # Panoptic fusion algorithm
-    po_loss = PanopticLoss(classes["stuff"])
-    po_fusion_algo = PanopticFusionAlgo(po_loss, classes["stuff"], classes["thing"], 1)
+    po_loss = None
+    po_fusion_algo = None
 
     # Create the BEV network
     return PanopticBevNet(body, bev_transformer, rpn_head, roi_head, sem_head, transformer_algo, rpn_algo, roi_algo,
@@ -536,7 +511,7 @@ def validate(model, dataloader, **varargs):
 
     # Accumulators for AP, mIoU and panoptic computation
     panoptic_buffer = torch.zeros(4, num_classes, dtype=torch.double)
-    po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
+    # po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
     data_time = time.time()
@@ -582,17 +557,17 @@ def validate(model, dataloader, **varargs):
 
             del losses, stats
 
-            # Do the post-processing
-            panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
-                                                          sample["iscrowd"])
-
-
-            # Get the evaluation metrics
-            panoptic_buffer, po_conf_mat = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer,
-                                                                               po_conf_mat, num_stuff=num_stuff,
-                                                                               num_classes=num_classes,
-                                                                               batch_sizes=batch_sizes,
-                                                                               original_sizes=original_sizes)
+            # # Do the post-processing
+            # panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
+            #                                               sample["iscrowd"])
+            #
+            #
+            # # Get the evaluation metrics
+            # panoptic_buffer, po_conf_mat = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer,
+            #                                                                    po_conf_mat, num_stuff=num_stuff,
+            #                                                                    num_classes=num_classes,
+            #                                                                    batch_sizes=batch_sizes,
+            #                                                                    original_sizes=original_sizes)
 
             # Log batch to tensorboard and console
             if (it + 1) % varargs["log_interval"] == 0:
@@ -604,13 +579,13 @@ def validate(model, dataloader, **varargs):
             data_time = time.time()
 
     # Finalise Panoptic mIoU computation
-    po_conf_mat = po_conf_mat.to(device=varargs["device"])
-    if not varargs['debug']:
-        distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
-    po_conf_mat = po_conf_mat.cpu()[:num_classes, :]
-    po_intersection = po_conf_mat.diag()
-    po_union = ((po_conf_mat.sum(dim=1) + po_conf_mat.sum(dim=0)[:num_classes] - po_conf_mat.diag()) + 1e-8)
-    po_miou = po_intersection / po_union
+    # po_conf_mat = po_conf_mat.to(device=varargs["device"])
+    # if not varargs['debug']:
+    #     distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
+    # po_conf_mat = po_conf_mat.cpu()[:num_classes, :]
+    # po_intersection = po_conf_mat.diag()
+    # po_union = ((po_conf_mat.sum(dim=1) + po_conf_mat.sum(dim=0)[:num_classes] - po_conf_mat.diag()) + 1e-8)
+    # po_miou = po_intersection / po_union
 
     # Finalise semantic mIoU computation
     sem_conf_mat = sem_conf_mat.to(device=varargs['device'])
@@ -623,9 +598,9 @@ def validate(model, dataloader, **varargs):
 
     # Save the metrics
     scores = {}
-    scores['po_miou'] = po_miou.mean()
+    # scores['po_miou'] = po_miou.mean()
     scores['sem_miou'] = sem_miou.mean()
-    scores = get_panoptic_scores(panoptic_buffer, scores, varargs["device"], num_stuff, varargs['debug'])
+    # scores = get_panoptic_scores(panoptic_buffer, scores, varargs["device"], num_stuff, varargs['debug'])
     # Update the validation metrics meters
     for key in val_metrics.keys():
         if key in scores.keys():
@@ -642,7 +617,7 @@ def validate(model, dataloader, **varargs):
     log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
     log_scores("Panoptic Scores", scores)
 
-    return scores['pq'].item()
+    return 0.0
 
 
 def main(args):
