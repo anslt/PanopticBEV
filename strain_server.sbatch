@@ -11,13 +11,12 @@
 
 module load cuda/11.1 cudnn
 
-CUDA_VISIBLE_DEVICES=0,1,2\
-CUDA_LAUNCH_BLOCKING=1 \
-python3 -m torch.distributed.launch --nproc_per_node=3 --master_port=29520 scripts/train_panoptic_bev.py \
+CUDA_VISIBLE_DEVICES=0,1,2 \
+python3 -m torch.distributed.launch --nproc_per_node=3 --master_port=29520 scripts/train_panoptic_bev_server.py \
     --run_name=nuscenes_`date +"%Y_%m_%d_%H_%M_%S"` \
     --project_root_dir=$(pwd) \
-    --seam_root_dir=/usr/stud/shil/storage/slurm/shil/nuScenes_panopticbev \
-    --dataset_root_dir=/usr/stud/shil/storage/slurm/shil/nuscenes/trainval \
+    --seam_root_dir=/home/data2/nuscenes/nuScenes_panopticbev/ \
+    --dataset_root_dir=/home/data2/nuscenes \
     --mode=train \
     --train_dataset=nuScenes \
     --val_dataset=nuScenes \
