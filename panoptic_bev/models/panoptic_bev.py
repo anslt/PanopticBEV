@@ -192,6 +192,7 @@ class PanopticBevNet(nn.Module):
         else:
             vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
 
+
         # # RPN Part
         # if do_loss:
         #     obj_loss, bbx_loss, proposals = self.rpn_algo.training(self.rpn_head, ms_bev, bbx, iscrowd, valid_size,
