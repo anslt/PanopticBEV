@@ -9,7 +9,7 @@
 #SBATCH --output=/storage/slurm/shil/kitti360/logs/slurm-%j.out
 #SBATCH --error=/storage/slurm/shil/kitti360/logs/slurm-%j.out
 
-module load cuda/11.1 cudnn/v8.1.1.33
+module load cuda/11.1 cudnn
 
 CUDA_VISIBLE_DEVICES=0,1,2,3 \
 CUDA_LAUNCH_BLOCKING=1 \
