@@ -326,7 +326,7 @@ def make_optimizer(config, model, epoch_length):
     opt_config = config["optimizer"]
     sch_config = config["scheduler"]
 
-    if not opt_config.has_section("optimizer") or opt_config["optimizer"] == "sgd":
+    if opt_config["optimizer"] is None or opt_config["optimizer"] == "sgd":
         print("SGD")
         optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
                               weight_decay=opt_config.getfloat("weight_decay"))
