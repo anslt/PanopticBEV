@@ -154,7 +154,7 @@ def make_dataloader(args, config, rank, world_size):
                                       split_name=dl_config['train_set'], transform=train_tf)
 
     if not args.debug:
-        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, True)
+        train_sampler = DistributedARBatchSampler(train_db, dl_config.getint('train_batch_size'), world_size, rank, is_train=True)
         train_dl = torch.utils.data.DataLoader(train_db,
                                                batch_sampler=train_sampler,
                                                collate_fn=iss_collate_fn,
@@ -183,7 +183,7 @@ def make_dataloader(args, config, rank, world_size):
                                     split_name=dl_config['val_set'], transform=val_tf)
 
     if not args.debug:
-        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, False)
+        val_sampler = DistributedARBatchSampler(val_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
         val_dl = torch.utils.data.DataLoader(val_db,
                                              batch_sampler=val_sampler,
                                              collate_fn=iss_collate_fn,
@@ -326,8 +326,16 @@ def make_optimizer(config, model, epoch_length):
     opt_config = config["optimizer"]
     sch_config = config["scheduler"]
 
-    optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
-                          weight_decay=opt_config.getfloat("weight_decay"))
+    if opt_config["optimizer"] is None or opt_config["optimizer"] == "sgd":
+        print("SGD")
+        optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
+                              weight_decay=opt_config.getfloat("weight_decay"))
+    elif opt_config["optimizer"] == "adam":
+        print("ADAM")
+        optimizer = optim.Adam(model.parameters(), lr=opt_config.getfloat("base_lr"),
+                              weight_decay=opt_config.getfloat("weight_decay"))
+    else:
+        raise "Optimizer ERROR"
 
     scheduler = scheduler_from_config(sch_config, optimizer, epoch_length)
 
@@ -436,6 +444,13 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         batch_time = time.time()
 
+        # print("img:", sample["img"]._tensors[0].size())
+        # print("bev_msk", sample["bev_msk"]._tensors[0].size())
+        # print("front_msk", sample["front_msk"]._tensors[0].size())
+        # print("weights_msk", sample["weights_msk"._tensors[0].size()])
+        # torch.save(sample["img"]._tensors[0].cpu(), "img.pt")
+        # torch.save(sample["bev_msk"]._tensors[0].cpu(), "bev_msk.pt")
+
         # Run network
         losses, results, stats = model(**sample, do_loss=True, do_prediction=False)
         if not varargs['debug']:
@@ -471,6 +486,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         del losses, stats, sample
 
         # Log to tensorboard and console
+        ## print(it)
         if (it + 1) % varargs["log_interval"] == 0:
             if varargs["summary"] is not None:
                 log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
@@ -636,11 +652,11 @@ def main(args):
         distributed.init_process_group(backend='nccl', init_method='env://')
         device_id, device = args.local_rank, torch.device(args.local_rank)
         rank, world_size = distributed.get_rank(), distributed.get_world_size()
-        torch.cuda.set_device(device_id)
+        torch.cuda.set_device(device_id) 
     else:
         rank = 0
         world_size = 1
-        device_id, device = rank, torch.device(rank+3)
+        device_id, device = rank, torch.device(rank)
 
     # Create directories
     if not args.debug:
@@ -694,6 +710,7 @@ def main(args):
         optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
     # Training loop
+    ## print(len(train_dataloader))
     momentum = 1. - 1. / len(train_dataloader)
     train_meters = {
         "loss": AverageMeter((), momentum),
