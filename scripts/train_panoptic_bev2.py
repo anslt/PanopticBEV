@@ -669,7 +669,7 @@ def main(args):
     model = make_model(args, config, train_dataloader.dataset.num_thing, train_dataloader.dataset.num_stuff)
 
     # Freeze modules based on the argument inputs
-    model = freeze_modules(args, model)
+    # model = freeze_modules(args, model)
 
     if args.resume:
         assert not args.pre_train, "resume and pre_train are mutually exclusive"
