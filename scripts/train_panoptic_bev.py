@@ -326,8 +326,14 @@ def make_optimizer(config, model, epoch_length):
     opt_config = config["optimizer"]
     sch_config = config["scheduler"]
 
-    optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
-                          weight_decay=opt_config.getfloat("weight_decay"))
+    if not opt_config.has_key("optimizer") or opt_config["optimizer"] == "sgd":
+        optimizer = optim.SGD(model.parameters(), lr=opt_config.getfloat("base_lr"),
+                              weight_decay=opt_config.getfloat("weight_decay"))
+    elif opt_config["optimizer"] == "adam":
+        optimizer = optim.Adam(model.parameters(), lr=opt_config.getfloat("base_lr"),
+                              weight_decay=opt_config.getfloat("weight_decay"))
+    else:
+        raise "Optimizer ERROR"
 
     scheduler = scheduler_from_config(sch_config, optimizer, epoch_length)
 
