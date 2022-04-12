@@ -453,7 +453,7 @@ def test(model, dataloader, **varargs):
             # Log batch to tensorboard and console
             if (it + 1) % varargs["log_interval"] == 0:
                 if varargs['summary'] is not None:
-                    log_iter("val", test_meters, time_meters, results, None, global_step=varargs['global_step'],
+                    log_iter("val", test_meters, time_meters, results, None, global_step=varargs['global_step'] + it ,
                              epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None, curr_iter=it+1,
                              num_iters=len(dataloader), summary=None)
 
