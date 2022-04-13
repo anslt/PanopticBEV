@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from PIL import Image
+import umsgpack
 
 with open("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/metadata_ortho.bin", "rb") as fid:
     metadata = umsgpack.unpack(fid, encoding="utf-8")
