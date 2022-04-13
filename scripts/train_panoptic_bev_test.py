@@ -719,6 +719,7 @@ def main(args):
     # # Create optimizer
     # optimizer, scheduler, batch_update, total_epochs = make_optimizer(config, model, len(train_dataloader))
     total_epochs = 1
+    batch_update = True
     # if args.resume:
     #     optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
