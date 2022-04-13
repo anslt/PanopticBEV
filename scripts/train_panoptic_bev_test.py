@@ -418,10 +418,10 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 
 def train(model, optimizer, scheduler, dataloader, meters, **varargs):
-    model.train()
+    # model.train()
     if not varargs['debug']:
         dataloader.batch_sampler.set_epoch(varargs["epoch"])
-    optimizer.zero_grad()
+    # optimizer.zero_grad()
 
     global_step = varargs["global_step"]
     loss_weights = varargs['loss_weights']
@@ -438,10 +438,12 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         weights_list = sample["weights_msk"]
         bev_msk_list = sample["bev_msk"]
         cat_list = sample["cat"]
+        freq = troch.zeros(11).cuda(0)
+        size = 768 * 704
         for weights, bev_msk, cat in zip(weights_list, bev_msk_list, cat_list):
             for idx, cat_c in enumerate(cat):
-                print("CAT: ",cat_c)
-                print(torch.mean(weights[bev_msk==idx]))
+                if cat_c != 255:
+                    freq[cat_c] += torch.sum(bev_msk==idx) / size
         # # Log the time
         # time_meters['data_time'].update(torch.tensor(time.time() - data_time))
         #
@@ -503,7 +505,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         #
         # data_time = time.time()
 
-    del results
+    for i in range(11):
+        print(freq[i])
     return global_step
 
 
@@ -686,36 +689,36 @@ def main(args):
     train_dataloader, val_dataloader = make_dataloader(args, config, rank, world_size)
 
     # Create model
-    model = make_model(args, config, train_dataloader.dataset.num_thing, train_dataloader.dataset.num_stuff)
-
-    # Freeze modules based on the argument inputs
-    model = freeze_modules(args, model)
-
-    if args.resume:
-        assert not args.pre_train, "resume and pre_train are mutually exclusive"
-        log_info("Loading snapshot from %s", args.resume, debug=args.debug)
-        snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "rpn_head", "roi_head", "sem_head"])
-    elif args.pre_train:
-        assert not args.resume, "resume and pre_train are mutually exclusive"
-        log_info("Loading pre-trained model from %s", args.pre_train, debug=args.debug)
-        pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "rpn_head", "roi_head", "sem_head"], rank)
-    else:
-        assert not args.eval, "--resume is needed in eval mode"
-        snapshot = None
+    # model = make_model(args, config, train_dataloader.dataset.num_thing, train_dataloader.dataset.num_stuff)
+    #
+    # # Freeze modules based on the argument inputs
+    # model = freeze_modules(args, model)
+    #
+    # if args.resume:
+    #     assert not args.pre_train, "resume and pre_train are mutually exclusive"
+    #     log_info("Loading snapshot from %s", args.resume, debug=args.debug)
+    #     snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "rpn_head", "roi_head", "sem_head"])
+    # elif args.pre_train:
+    #     assert not args.resume, "resume and pre_train are mutually exclusive"
+    #     log_info("Loading pre-trained model from %s", args.pre_train, debug=args.debug)
+    #     pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "rpn_head", "roi_head", "sem_head"], rank)
+    # else:
+    #     assert not args.eval, "--resume is needed in eval mode"
+    #     snapshot = None
 
     # Init GPU stuff
-    if not args.debug:
-        torch.backends.cudnn.benchmark = config["general"].getboolean("cudnn_benchmark")
-        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)  # Convert batch norm to SyncBatchNorm
-        model = DistributedDataParallel(model.cuda(device), device_ids=[device_id], output_device=device_id,
-                                        find_unused_parameters=True)
-    else:
-        model = model.cuda(device)
-
-    # Create optimizer
-    optimizer, scheduler, batch_update, total_epochs = make_optimizer(config, model, len(train_dataloader))
-    if args.resume:
-        optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
+    # if not args.debug:
+    #     torch.backends.cudnn.benchmark = config["general"].getboolean("cudnn_benchmark")
+    #     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)  # Convert batch norm to SyncBatchNorm
+    #     model = DistributedDataParallel(model.cuda(device), device_ids=[device_id], output_device=device_id,
+    #                                     find_unused_parameters=True)
+    # else:
+    #     model = model.cuda(device)
+    #
+    # # Create optimizer
+    # optimizer, scheduler, batch_update, total_epochs = make_optimizer(config, model, len(train_dataloader))
+    # if args.resume:
+    #     optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
     # Training loop
     ## print(len(train_dataloader))
@@ -753,7 +756,7 @@ def main(args):
             scheduler.step(epoch)
 
         # Run training epoch
-        global_step = train(model, optimizer, scheduler, train_dataloader, train_meters,
+        global_step = train(None, None, None, train_dataloader, train_meters,
                             batch_update=batch_update, epoch=epoch, summary=summary, device=device,
                             log_interval=config["general"].getint("log_interval"), num_epochs=total_epochs,
                             global_step=global_step, loss_weights=config['optimizer'].getstruct("loss_weights"),
