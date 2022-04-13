@@ -24,7 +24,7 @@ freq = np.zeros(11)
 count = 0
 for image in images:
     bev_msk_file = os.path.join("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/bev_msk/bev_ortho", "{}.png".format(image['id']))
-    bev_msk = np.array(Image.open(bev_msk_file), dtype=int32)
+    bev_msk = np.array(Image.open(bev_msk_file), dtype=numpy.int32)
     cat = image["cat"]
     size = 768 * 704
     for idx, cat_c in enumerate(cat):
