@@ -3,6 +3,7 @@ import cv2
 from PIL import Image
 import umsgpack
 import os
+import time
 
 with open("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/metadata_ortho.bin", "rb") as fid:
     metadata = umsgpack.unpack(fid, encoding="utf-8")
@@ -22,9 +23,10 @@ images = [img_desc for img_desc in metadata["images"] if img_desc["id"] in lst]
 print(len(images))
 freq = np.zeros(11)
 count = 0
+data_time = time.time()
 for image in images:
     bev_msk_file = os.path.join("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/bev_msk/bev_ortho", "{}.png".format(image['id']))
-    bev_msk = np.array(Image.open(bev_msk_file), dtype=numpy.int32)
+    bev_msk = np.array(Image.open(bev_msk_file), dtype=np.int32)
     cat = image["cat"]
     size = 768 * 704
     for idx, cat_c in enumerate(cat):
@@ -32,3 +34,5 @@ for image in images:
             freq[cat_c] += np.sum(bev_msk == idx) / size
     if (count + 1) % 100 == 0:
         print(count)
+        print(time.time() - data_time)
+        data_time = time.time()
