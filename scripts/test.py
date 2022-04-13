@@ -11,7 +11,7 @@ with open("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/split
     lst = fid.readlines()
     lst = [line.strip() for line in lst]
 
-front_msk_frames = os.listdir("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/front_msk_seam")
+front_msk_frames = os.listdir("/usr/stud/shil/storage/slurm/shil/kitti360/kitti360_panopticbev/front_msk_seam/front")
 front_msk_frames = [frame.split(".")[0] for frame in front_msk_frames]
 lst = [entry for entry in lst if entry in front_msk_frames]
 lst = set(lst)  # Remove any potential duplicates
