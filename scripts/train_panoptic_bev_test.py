@@ -497,7 +497,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         #
         # # Log to tensorboard and console
         # ## print(it)
-        # if (it + 1) % varargs["log_interval"] == 0:
+        if (it + 1) % 10 == 0:
+            print(it,"/",len(dataloader))
         #     if varargs["summary"] is not None:
         #         log_iter("train", meters, time_meters, results, None, batch=True, global_step=global_step,
         #                  epoch=varargs["epoch"], num_epochs=varargs['num_epochs'], lr=scheduler.get_lr()[0],
