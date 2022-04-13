@@ -32,7 +32,12 @@ for image in images:
     for idx, cat_c in enumerate(cat):
         if cat_c != 255:
             freq[cat_c] += np.sum(bev_msk == idx) / size
+    count += 1
     if (count + 1) % 100 == 0:
         print(count)
         print(time.time() - data_time)
         data_time = time.time()
+        print(freq)
+
+print("Final:")
+print(freq / count)
