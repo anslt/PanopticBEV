@@ -438,7 +438,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         weights_list = sample["weights_msk"]
         bev_msk_list = sample["bev_msk"]
         cat_list = sample["cat"]
-        freq = troch.zeros(11).cuda(0)
+        freq = torch.zeros(11).cuda(0)
         size = 768 * 704
         for weights, bev_msk, cat in zip(weights_list, bev_msk_list, cat_list):
             for idx, cat_c in enumerate(cat):
