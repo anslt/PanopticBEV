@@ -435,7 +435,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
         sample['calib'], _ = pad_packed_images(sample['calib'])
 
-        weights_list = sample["weights_msk"]\
+        weights_list = sample["weights_msk"]
         bev_msk_list = sample["bev_msk"]
         cat_list = sample["cat"]
         for weights, bev_msk, cat in zip(weights_list, bev_msk_list, cat_list):
