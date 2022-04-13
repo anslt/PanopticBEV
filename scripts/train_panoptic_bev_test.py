@@ -708,8 +708,8 @@ def main(args):
     #     snapshot = None
 
     # Init GPU stuff
-    # if not args.debug:
-    #     torch.backends.cudnn.benchmark = config["general"].getboolean("cudnn_benchmark")
+    if not args.debug:
+        torch.backends.cudnn.benchmark = config["general"].getboolean("cudnn_benchmark")
     #     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)  # Convert batch norm to SyncBatchNorm
     #     model = DistributedDataParallel(model.cuda(device), device_ids=[device_id], output_device=device_id,
     #                                     find_unused_parameters=True)
@@ -718,6 +718,7 @@ def main(args):
     #
     # # Create optimizer
     # optimizer, scheduler, batch_update, total_epochs = make_optimizer(config, model, len(train_dataloader))
+    total_epochs = 1
     # if args.resume:
     #     optimizer.load_state_dict(snapshot["state_dict"]["optimizer"])
 
