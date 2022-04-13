@@ -250,7 +250,7 @@ class BEVNuScenesDataset(data.Dataset):
         # Load the weight map
         weights_msk_file = os.path.join(self._weights_msk_dir, "{}.png".format(img_desc['id']))
         weights_msk = cv2.imread(weights_msk_file, cv2.IMREAD_UNCHANGED).astype(float)
-        print(weights_msk[500,500])
+        # print(weights_msk[500,500])
         if weights_msk is not None:
             weights_msk_combined = (weights_msk[:, :, 0] + (weights_msk[:, :, 1] / 10000)) * 10000
             weights_msk_combined = [Image.fromarray(weights_msk_combined.astype(np.int32))]
