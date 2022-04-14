@@ -460,9 +460,10 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         losses["loss"] = sum(loss_weights[loss_name] * losses[loss_name] for loss_name in losses.keys())
 
         # Increment the optimiser and back propagate the gradients
-        optimizer.zero_grad()
+        # optimizer.zero_grad()
         losses["loss"].backward()
         optimizer.step()
+        optimizer.zero_grad()
 
         time_meters['batch_time'].update(torch.tensor(time.time() - batch_time))
 
@@ -566,7 +567,7 @@ def validate(model, dataloader, **varargs):
 
             # Separate the normal and abnormal stats entries
             sem_conf_stat = stats['sem_conf']
-            rem_stats = {k: v for k, v in stats.items() if k is not "sem_conf"}
+            rem_stats = {k: v for k, v in stats.items() if k != "sem_conf"}
             if not varargs['debug']:
                 distributed.all_reduce(sem_conf_stat, distributed.ReduceOp.SUM)
 
