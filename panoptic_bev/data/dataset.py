@@ -148,7 +148,7 @@ class BEVKitti360Dataset(data.Dataset):
     def __getitem__(self, item):
         img, bev_msk, front_msk, weights_msk,cat, iscrowd, calib, idx = self._load_item(item)
         rec = self.transform(img=img, bev_msk=bev_msk, front_msk=front_msk, weights_msk=weights_msk, cat=cat,
-                             iscrowd=iscrowd, calib=calib)
+                             iscrowd=iscrowd, calib=calib, is_kitti=True)
         size = (img[0].size[1], img[0].size[0])
 
         # Close the files

@@ -7,7 +7,7 @@ from torchvision.transforms import ColorJitter
 import torchvision.transforms.functional as F
 
 from panoptic_bev.utils.bbx import extract_boxes
-
+WEIGHTS = [ 19947,  37786,  31606, 128508, 18990,  42397,  22106, 816881, 555749,  53887, 201674]
 
 ################### START - COPY FROM OLDER PYTORCH VERSION FOR BACKWARD COMPATIBILITY ###################
 class Lambda:
@@ -202,7 +202,7 @@ class BEVTransform:
 
         return transform
 
-    def __call__(self, img, bev_msk, front_msk=None, weights_msk=None, cat=None, iscrowd=None, calib=None):
+    def __call__(self, img, bev_msk, front_msk=None, weights_msk=None, cat=None, iscrowd=None, calib=None, is_kitti=False):
         # Random flip
         if self.random_flip:
             img, bev_msk, front_msk, weights_msk = self._random_flip(img, bev_msk, front_msk, weights_msk)
@@ -260,10 +260,15 @@ class BEVTransform:
             bev_msk = np.stack([np.array(m, dtype=np.int32, copy=False) for m in bev_msk], axis=0)
             bev_msk, cat, iscrowd = self._compact_labels(bev_msk, cat, iscrowd)
 
-        if weights_msk is not None:
-            weights_msk = [np.array(m, dtype=np.int32, copy=False) for m in weights_msk]
-            weights_msk = np.stack(weights_msk, axis=0)
-
+        if is_kitti:
+            weights_msk = np.zeros_like(bev_msk, dtype=np.int32)
+            for idx, cat_idx in enumerate(cat):
+                if cat_idx != 255:
+                    weights_msk[bev_msk == idx] = WEIGHTS[cat_idx]
+        else:
+            if weights_msk is not None:
+                weights_msk = [np.array(m, dtype=np.int32, copy=False) for m in weights_msk]
+                weights_msk = np.stack(weights_msk, axis=0)
         if front_msk is not None:
             front_msk = np.stack([np.array(m, dtype=np.int32, copy=False) for m in front_msk], axis=0)
 
