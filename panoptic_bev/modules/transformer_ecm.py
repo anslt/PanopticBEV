@@ -267,7 +267,7 @@ class Perspective2OrthographicWarper(nn.Module):
         return torch.stack([xx, zz], dim=-1)
 
 
-class TransformerVF_ecm(nn.Module):
+class TransformerVF(nn.Module):
     def __init__(self, in_ch, tfm_ch, out_ch,  extrinsics=None, bev_params=None, H_in=None, W_in=None, Z_out=None,
                  W_out=None, img_scale=None, norm_act=ABN):
         super(TransformerVF, self).__init__()
