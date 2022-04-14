@@ -177,11 +177,11 @@ class FlatTransformer(nn.Module):
         # ignored_by_ipm_mask = (ipm_incorrect_fv == 0)
         # feat = feat * ignored_by_ipm_mask
         # feat_ecm_fv = feat_ecm_fv + feat
-        feat_ecm_fv = feat
+        # feat_ecm_fv = feat
         # del feat
         #
         # # Apply the ErrorCorrectionModule to the regions where IPM made a mistake
-        feat_bev_ecm = self.ecm(feat_ecm_fv)
+        feat_bev_ecm = self.ecm(feat)
         feat_bev_ecm = self.warper(feat_bev_ecm, intrinsics)
         feat_bev_ecm = F.interpolate(feat_bev_ecm, size=(int(self.Z_out), int(self.W_out)), mode="bilinear", align_corners=True)
         feat_bev_ecm = torch.flip(feat_bev_ecm, dims=[3])
@@ -267,7 +267,7 @@ class Perspective2OrthographicWarper(nn.Module):
         return torch.stack([xx, zz], dim=-1)
 
 
-class TransformerVF(nn.Module):
+class TransformerVF_ecm(nn.Module):
     def __init__(self, in_ch, tfm_ch, out_ch,  extrinsics=None, bev_params=None, H_in=None, W_in=None, Z_out=None,
                  W_out=None, img_scale=None, norm_act=ABN):
         super(TransformerVF, self).__init__()

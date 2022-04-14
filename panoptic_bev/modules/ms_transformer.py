@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 from inplace_abn import ABN
 
-from panoptic_bev.modules.transformer import TransformerVF
+from panoptic_bev.modules import TransformerVF
+from panoptic_bev.modules import TransformerVF_ecm
 
 
 class MultiScaleTransformerVF(nn.Module):
@@ -18,11 +19,11 @@ class MultiScaleTransformerVF(nn.Module):
 
         for scale_idx, scale in enumerate(tfm_scales):
             if use_init_theta:
-                transformer = TransformerVF(in_ch, tfm_ch, out_ch, extrinsics, bev_params,
+                transformer = TransformerVF_ecm(in_ch, tfm_ch, out_ch, extrinsics, bev_params,
                                             H_in=H_in, W_in=W_in, Z_out=Z_out, W_out=W_out, img_scale=1/scale,
                                             norm_act=norm_act)
             else:
-                transformer = TransformerVF(in_ch, tfm_ch, out_ch, bev_params=bev_params,
+                transformer = TransformerVF_ecm(in_ch, tfm_ch, out_ch, bev_params=bev_params,
                                             H_in=H_in, W_in=W_in, Z_out=Z_out, W_out=W_out, img_scale=1/scale,
                                             norm_act=norm_act)
 
