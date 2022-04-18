@@ -26,7 +26,7 @@ class BEVKitti360Dataset(data.Dataset):
         self.split_name = split_name
         self.transform = transform
         self.rgb_cameras = ['front']
-        self.instance_generator=PanopticTargetGenerator
+        self.instance_generator=PanopticTargetGenerator(thing_list=[7,8,9,10], sigma=[4,4,8,8])
 
         # Folders
         self._img_dir = os.path.join(seam_root_dir, BEVKitti360Dataset._IMG_DIR)
@@ -194,7 +194,7 @@ class BEVNuScenesDataset(data.Dataset):
         self.split_name = split_name
         self.transform = transform
         self.rgb_cameras = ['front']
-        self.instance_generator = PanopticTargetGenerator()
+        self.instance_generator=PanopticTargetGenerator(thing_list=[6,7,8,9], sigma=[4,8,8,4])
 
 
         # Folders
