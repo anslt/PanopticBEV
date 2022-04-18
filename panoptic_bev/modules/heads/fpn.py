@@ -338,4 +338,4 @@ class InstanceHead(nn.Module):
 
     def forward(self, x):
 
-        return self.center_head(x), self.center_head(x)
+        return self.center_head(x), self.offset_head(x)
