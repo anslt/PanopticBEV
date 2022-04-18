@@ -54,11 +54,11 @@ class InstanceSegLoss:
         offset_loss = []
         for i, (center_logits_i, offset_logits_i, center_i, offset_i, inst_weights_i) in \
                 enumerate(zip(center_logits, offset_logits, center, offset, inst_weights)):
-            print(center_logits_i.shape)
-            print(offset_logits_i.shape)
-            print(center_i.shape)
-            print(offset_i.shape)
-            print(inst_weights_i.shape)
+            # print(center_logits_i.shape)
+            # print(offset_logits_i.shape)
+            # print(center_i.shape)
+            # print(offset_i.shape)
+            # print(inst_weights_i.shape)
             # if self.ignore_labels is not None:
             #     inst_i[(inst_i == self.ignore_labels).any(-1)] = self.ignore_index  # Remap the ignore_labels to ignore_index
 
@@ -166,6 +166,8 @@ class InstanceSegAlgo:
         # Compute loss and confusion matrix
         center_loss, offset_loss = self.loss(center_logits, offset_logits, center, offset, inst_weights,
                                              weights_msk, intrinsics=intrinsics)
+        print(center_loss)
+        print(offset_loss)
         # conf_mat = self._confusion_matrix(inst_pred, inst)
 
         return center_loss, offset_loss, center_logits, offset_logits
