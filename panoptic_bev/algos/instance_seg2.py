@@ -154,6 +154,10 @@ class InstanceSegAlgo:
         center_logits, offset_logits = self._logits2(head1, inst_feat)
 
         # inst_pred = PackedSequence([inst_logits_i.max(dim=0)[1] for inst_logits_i in inst_logits])
+        print(offset_logits.shape)
+        print(center_logits.shape)
+        print(center.shape)
+        print(offset.shape)
 
         # Compute loss and confusion matrix
         center_loss, offset_loss = self.loss(center_logits, offset_logits, center, offset, inst_weights,
