@@ -218,7 +218,8 @@ class PanopticBevNet(nn.Module):
         if do_loss:
             sem_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = self.sem_algo.training(self.sem_head, ms_bev,
                                                                                             sem_gt, bbx, valid_size,
-                                                                                            img_size, weights_msk,                                                                                            calib)
+                                                                                            img_size, weights_msk,
+                                                                                            calib)
         elif do_prediction:
             sem_pred, sem_logits, sem_feat = self.sem_algo.inference(self.sem_head, ms_bev, valid_size, img_size)
             sem_loss, sem_reg_loss, sem_conf_mat = None, None, None
@@ -229,7 +230,7 @@ class PanopticBevNet(nn.Module):
                                                                                            ms_bev, center, offset,
                                                                                            valid_size,
                                                                                            img_size, center_weights,
-                                                                                           weights_msk, intrinsics)
+                                                                                           weights_msk, calib)
 
         # Panoptic Fusion. Fuse the semantic and instance predictions to generate a coherent output
         # if do_prediction:
