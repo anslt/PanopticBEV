@@ -57,6 +57,7 @@ class PanopticTargetGenerator(object):
                     regression 0 is ignore, 1 is has instance. Multiply this mask to loss.
         """
 
+        print("P", panoptic.shape)
         height, width = panoptic.shape[0], panoptic.shape[1]
         # semantic = np.zeros_like(panoptic, dtype=np.uint8) + self.ignore_label
         foreground = np.zeros_like(panoptic, dtype=np.uint8)
