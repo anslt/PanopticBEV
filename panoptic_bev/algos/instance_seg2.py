@@ -166,8 +166,7 @@ class InstanceSegAlgo:
         # Compute loss and confusion matrix
         center_loss, offset_loss = self.loss(center_logits, offset_logits, center, offset, inst_weights,
                                              weights_msk, intrinsics=intrinsics)
-        print(center_loss)
-        print(offset_loss)
+
         # conf_mat = self._confusion_matrix(inst_pred, inst)
 
         return center_loss, offset_loss, center_logits, offset_logits
