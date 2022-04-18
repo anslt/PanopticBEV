@@ -22,13 +22,14 @@ class PanopticTargetGenerator(object):
         assert len(thing_list) == len(sigma)
 
         self.sigma = {}
+        self.g = {}
         for i, s in zip(thing_list,sigma):
             self.sigma[i] = s
-        size = 6 * sigma + 3
-        x = np.arange(0, size, 1, float)
-        y = x[:, np.newaxis]
-        x0, y0 = 3 * sigma + 1, 3 * sigma + 1
-        self.g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+            size = 6 * s + 3
+            x = np.arange(0, size, 1, float)
+            y = x[:, np.newaxis]
+            x0, y0 = 3 * s + 1, 3 * s + 1
+            self.g[i] = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * s ** 2))
 
     def __call__(self, panoptic, cat, iscrowd):
         """Generates the training target.
@@ -115,7 +116,7 @@ class PanopticTargetGenerator(object):
                 cc, dd = max(0, ul[0]), min(br[0], width)
                 aa, bb = max(0, ul[1]), min(br[1], height)
                 center[0, aa:bb, cc:dd] = np.maximum(
-                    center[0, aa:bb, cc:dd], self.g[a:b, c:d])
+                    center[0, aa:bb, cc:dd], self.g[cat_id][a:b, c:d])
 
                 # generate offset (2, h, w) -> (y-dir, x-dir)
                 offset_y_index = (np.zeros_like(mask_index[0]), mask_index[0], mask_index[1])
