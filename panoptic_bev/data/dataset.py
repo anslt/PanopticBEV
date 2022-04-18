@@ -162,7 +162,7 @@ class BEVKitti360Dataset(data.Dataset):
         for m in front_msk:
             m.close()
 
-        target = self.self.instance_generator(rec["np_data"][0], rec["np_data"][1], rec["np_data"][2])
+        target = self.instance_generator(rec["np_data"][0], rec["np_data"][1], rec["np_data"][2])
 
         rec["idx"] = idx
         rec["size"] = size
@@ -330,7 +330,7 @@ class BEVNuScenesDataset(data.Dataset):
             for m in vf_msk:
                 m.close()
 
-        target = self.self.instance_generator(rec["np_data"][0],rec["np_data"][1],rec["np_data"][2])
+        target = self.instance_generator(rec["np_data"][0],rec["np_data"][1],rec["np_data"][2])
 
         rec["idx"] = idx
         rec["size"] = size
