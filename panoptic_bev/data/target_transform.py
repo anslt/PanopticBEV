@@ -127,7 +127,7 @@ class PanopticTargetGenerator(object):
         return dict(
             foreground=torch.from_numpy(foreground.astype(np.long)),
             center=torch.from_numpy(center.astype(np.float)),
-            center_points=torch.from_numpy(center_pts.astype(np.long)),
+            center_points=torch.from_numpy(np.array(center_pts).astype(np.long)),
             offset=torch.from_numpy(offset.astype(np.float)),
             center_weights=torch.from_numpy(center_weights.astype(np.float)),
             offset_weights=torch.from_numpy(offset_weights.astype(np.float))
