@@ -57,8 +57,8 @@ class InstanceSegLoss:
             # if self.ignore_labels is not None:
             #     inst_i[(inst_i == self.ignore_labels).any(-1)] = self.ignore_index  # Remap the ignore_labels to ignore_index
 
-            center_loss_i = functional.mse_loss(inst_weights * center_logits_i, inst_weights * center_i, reduction="none")
-            offset_loss_i = functional.l1_loss(inst_weights * offset_logits_i, inst_weights * offset_i,
+            center_loss_i = functional.mse_loss(inst_weights_i * center_logits_i, inst_weights_i * center_i, reduction="none")
+            offset_loss_i = functional.l1_loss(inst_weights_i * offset_logits_i, inst_weights_i * offset_i,
                                                reduction="none")
 
             # f_x = intrinsics[i][0][0]
