@@ -57,7 +57,7 @@ class PanopticTargetGenerator(object):
                     regression 0 is ignore, 1 is has instance. Multiply this mask to loss.
         """
 
-        print("P", panoptic.shape)
+        panoptic = panoptic[0]
         height, width = panoptic.shape[0], panoptic.shape[1]
         # semantic = np.zeros_like(panoptic, dtype=np.uint8) + self.ignore_label
         foreground = np.zeros_like(panoptic, dtype=np.uint8)
@@ -125,14 +125,14 @@ class PanopticTargetGenerator(object):
                 offset[offset_y_index] = center_y - y_coord[mask_index]
                 offset[offset_x_index] = center_x - x_coord[mask_index]
 
-        print(center.shape)
-        print(offset.shape)
+        # print(center.shape)
+        # print(offset.shape)
 
         return dict(
             foreground=torch.from_numpy(foreground.astype(np.long)),
             center=torch.from_numpy(center.astype(np.float)),
             center_points=torch.from_numpy(np.array(center_pts).astype(np.long)),
             offset=torch.from_numpy(offset.astype(np.float)),
-            center_weights=torch.from_numpy(center_weights.astype(np.float)),
-            offset_weights=torch.from_numpy(offset_weights.astype(np.float))
+            center_weights=torch.from_numpy(center_weights.astype(np.float)).unsqueeze(0),
+            offset_weights=torch.from_numpy(offset_weights.astype(np.float)).unsqueeze(0)
         )
