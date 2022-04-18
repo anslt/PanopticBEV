@@ -312,7 +312,7 @@ def make_model(args, config, num_thing, num_stuff):
 
     inst_loss = InstanceSegLoss(ohem=sem_config.getfloat("ohem"), out_shape=out_shape, bev_params=bev_params,
                                extrinsics=extrinsics)
-    inst_algo = InstancegAlgo(inst_loss, 256, norm_act_norm_act_static)
+    inst_algo = InstanceAlgo(inst_loss, 256, norm_act_norm_act_static)
     inst_head = FPNSemanticHeadDPC(transformer_config.getint("bev_ms_channels"),
                                   sem_config.getint("fpn_min_level"),
                                   sem_config.getint("fpn_levels"),
