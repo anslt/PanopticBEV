@@ -18,7 +18,7 @@ from panoptic_bev.data.misc import iss_collate_fn
 from panoptic_bev.data.sampler import DistributedARBatchSampler
 
 from panoptic_bev.modules.ms_transformer import MultiScaleTransformerVF
-from panoptic_bev.modules.heads import FPNSemanticHeadDPC, FPNMaskHead, RPNHead, InstanceHead
+from panoptic_bev.modules.heads import FPNSemanticHeadDPC, FPNMaskHead, InstanceHead, RPNHead
 
 from panoptic_bev.models.backbone_edet.efficientdet import EfficientDet
 from panoptic_bev.models.panoptic_bev import PanopticBevNet, NETWORK_INPUTS
