@@ -225,7 +225,7 @@ class PanopticBevNet(nn.Module):
         else:
             sem_loss, sem_reg_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = None, None, None, None, None, None
 
-        center_loss, offset_loss, center_logits, offset_logits = self.inst_algo.processing(self, self.head, self.head1,
+        center_loss, offset_loss, center_logits, offset_logits = self.inst_algo.processing(self, self.inst_head, self.inst_head1,
                                                                                            ms_bev, center, offset,
                                                                                            valid_size,
                                                                                            img_size, center_weights,
