@@ -132,7 +132,8 @@ class PanopticBevNet(nn.Module):
         return cat_out, iscrowd_out, bbx_out, ids_out, sem_out, po_out, po_vis_out
 
     def forward(self, img, bev_msk=None, front_msk=None, weights_msk=None, cat=None, iscrowd=None, bbx=None, calib=None,
-                do_loss=False, do_prediction=False):
+                foreground=None, center=None, center_points=None, offset=None, center_weights=None,
+                offset_weights=None, do_loss=False, do_prediction=False):
         result = OrderedDict()
         loss = OrderedDict()
         stats = OrderedDict()
@@ -227,7 +228,7 @@ class PanopticBevNet(nn.Module):
         center_loss, offset_loss, center_logits, offset_logits = self.inst_algo.processing(self, self.head, self.head1,
                                                                                            ms_bev, center, offset,
                                                                                            valid_size,
-                                                                                           img_size, inst_weights,
+                                                                                           img_size, center_weights,
                                                                                            weights_msk, intrinsics)
 
         # Panoptic Fusion. Fuse the semantic and instance predictions to generate a coherent output

@@ -151,7 +151,7 @@ class BEVKitti360Dataset(data.Dataset):
     def __getitem__(self, item):
         img, bev_msk, front_msk, weights_msk,cat, iscrowd, calib, idx = self._load_item(item)
         rec = self.transform(img=img, bev_msk=bev_msk, front_msk=front_msk, weights_msk=weights_msk, cat=cat,
-                             iscrowd=iscrowd, calib=calib, nun_stff=self.num_stuff, is_kitti=True)
+                             iscrowd=iscrowd, calib=calib, is_kitti=True)
         size = (img[0].size[1], img[0].size[0])
 
         # Close the files
@@ -162,9 +162,11 @@ class BEVKitti360Dataset(data.Dataset):
         for m in front_msk:
             m.close()
 
+        target = self.self.instance_generator(rec["np_data"][0], rec["np_data"][1], rec["np_data"][2])
+
         rec["idx"] = idx
         rec["size"] = size
-        return rec
+        return dict(rec, **target)
 
     def get_image_desc(self, idx):
         """Look up an image descriptor given the id"""
