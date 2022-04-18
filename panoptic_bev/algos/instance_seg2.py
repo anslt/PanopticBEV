@@ -120,7 +120,7 @@ class InstanceSegAlgo:
     @staticmethod
     def _logits(head, x, img_size, roi):
         inst_feat, _, _ = head(x, None, img_size, roi)
-        return inst_logits
+        return inst_feat
 
     def processing(self, head, head1, x, center, offset, valid_size, img_size, inst_weights, weights_msk, intrinsics):
         """Given input features and ground truth compute instantic segmentation loss, confusion matrix and prediction
@@ -148,7 +148,7 @@ class InstanceSegAlgo:
             A sequence of N tensors of instantic segmentations with shapes H_i x W_i
         """
         # Compute logits and prediction
-        inst_feat, roi_logits = self._logits(head, x, img_size, False)
+        inst_feat = self._logits(head, x, img_size, False)
         # inst_logits = self._pack_logits(inst_logits_, valid_size, img_size)
         inst_feat = functional.interpolate(inst_feat, size=img_size, mode="bilinear", align_corners=False)
         center_logits, offset_logits = self._logits2(head1, inst_feat)
