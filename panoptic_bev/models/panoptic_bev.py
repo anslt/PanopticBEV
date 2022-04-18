@@ -4,7 +4,7 @@ import torch.nn as nn
 from panoptic_bev.utils.sequence import pad_packed_images
 
 NETWORK_INPUTS = ["img", "bev_msk", "front_msk", "weights_msk", "cat", "iscrowd", "bbx", "calib",
-                  "foreground", "center", "center_points", "offset", "center_weights",
+                  "foreground", "center", "center_points", "center_points", "offset",
                   "center_weights", "offset_weights"]
 
 class PanopticBevNet(nn.Module):
