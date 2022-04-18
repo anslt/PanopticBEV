@@ -76,10 +76,10 @@ class PanopticTargetGenerator(object):
         # (3) (Optional) It is stuff region (for offset branch)
         center_weights = np.zeros_like(panoptic, dtype=np.uint8)
         offset_weights = np.zeros_like(panoptic, dtype=np.uint8)
-        for i, (cat_id, iscrowd) in enumerate(zip(cat, iscrowd)):
+        for i, (cat_id, iscrowd_id) in enumerate(zip(cat, iscrowd)):
             if cat_id in self.thing_list:
                 foreground[panoptic == i] = 1
-                if not iscrowd_:
+                if not iscrowd_id:
                     # Ignored regions are not in `segments`.
                     # Handle crowd region.
                     center_weights[panoptic == i] = 1
