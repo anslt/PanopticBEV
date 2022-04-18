@@ -316,3 +316,26 @@ class FPNSemanticHeadDPC(nn.Module):
             roi_logits = None
 
         return xs, sem_feat, roi_logits
+
+class InstanceHead(nn.Module):
+    def __init__(self, in_channels=256, mid_channels=32):
+        super(InstanceHead, self).__init__()
+
+        self.center_head = nn.Sequential(nn.Conv2d(in_channels, in_channels, 3, 1, 1, bias=False),
+                                         norm_act(in_channels),
+                                         nn.Conv2d(in_channels, mid_channels, 1, 1, 0, bias=False),
+                                         norm_act(mid_channels),
+                                         nn.Conv2d(mid_channels, mid_channels, 3, 1, 1, bias=False),
+                                         norm_act(mid_channels),
+                                         nn.Conv2d(mid_channels, 1, 1, 1, 0, bias=False))
+        self.offset_head = nn.Sequential(nn.Conv2d(in_channels, in_channels, 3, 1, 1, bias=False),
+                                         norm_act(in_channels),
+                                         nn.Conv2d(in_channels, mid_channels, 1, 1, 0, bias=False),
+                                         norm_act(mid_channels),
+                                         nn.Conv2d(mid_channels, mid_channels, 3, 1, 1, bias=False),
+                                         norm_act(mid_channels),
+                                         nn.Conv2d(mid_channels, 1, 1, 1, 0, bias=False))
+
+    def forward(self, x):
+
+        return self.center_head(x), self.center_head(x)

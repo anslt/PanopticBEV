@@ -3,20 +3,20 @@ import torch
 import torch.nn as nn
 from panoptic_bev.utils.sequence import pad_packed_images
 
-NETWORK_INPUTS = ["img", "bev_msk", "front_msk", "weights_msk", "cat", "iscrowd", "bbx", "calib"]
+NETWORK_INPUTS = ["img", "bev_msk", "front_msk", "weights_msk", "cat", "iscrowd", "bbx", "calib",
+                  "foreground", "center", "center_points", "offset", "center_weights",
+                  "center_weights", "offset_weights"]
 
 class PanopticBevNet(nn.Module):
     def __init__(self,
                  body,
                  transformer,
-                 rpn_head,
-                 roi_head,
                  sem_head,
+                 inst_head,
+                 inst_head1,
                  transformer_algo,
-                 rpn_algo,
-                 inst_algo,
                  sem_algo,
-                 po_fusion_algo,
+                 inst_algo,
                  dataset,
                  classes=None,
                  front_vertical_classes=None,  # In the frontal view
@@ -32,16 +32,18 @@ class PanopticBevNet(nn.Module):
         self.transformer = transformer
 
         # Modules
-        self.rpn_head = rpn_head
-        self.roi_head = roi_head
+        # self.rpn_head = rpn_head
+        # self.roi_head = roi_head
         self.sem_head = sem_head
+        self.inst_head = inst_head
+        self.inst_head1 = inst_head1
 
         # Algorithms
         self.transformer_algo = transformer_algo
-        self.rpn_algo = rpn_algo
+        # self.rpn_algo = rpn_algo
         self.inst_algo = inst_algo
         self.sem_algo = sem_algo
-        self.po_fusion_algo = po_fusion_algo
+        # self.po_fusion_algo = po_fusion_algo
 
         # Params
         self.dataset = dataset
@@ -187,29 +189,29 @@ class PanopticBevNet(nn.Module):
         # else:
         #     vf_logits_list, ms_bev, vf_loss, v_region_loss, f_region_loss = None, None, None, None, None
 
-        # RPN Part
-        if do_loss:
-            obj_loss, bbx_loss, proposals = self.rpn_algo.training(self.rpn_head, ms_bev, bbx, iscrowd, valid_size,
-                                                                   training=self.training, do_inference=True)
-        elif do_prediction:
-            proposals = self.rpn_algo.inference(self.rpn_head, ms_bev, valid_size, self.training)
-            obj_loss, bbx_loss = None, None
-        else:
-            obj_loss, bbx_loss, proposals = None, None, None
-
-        # ROI Part
-        if do_loss:
-            roi_cls_loss, roi_bbx_loss, roi_msk_loss, roi_cls_logits, roi_bbx_logits, roi_msk_logits = \
-                self.inst_algo.training(self.roi_head, ms_bev, proposals, bbx, cat, iscrowd, ids, bev_msk, img_size)
-        else:
-            roi_cls_loss, roi_bbx_loss, roi_msk_loss = None, None, None
-            roi_cls_logits, roi_bbx_logits, roi_msk_logits = None, None, None
-        if do_prediction:
-            bbx_pred, cls_pred, obj_pred, msk_pred, roi_msk_logits = self.inst_algo.inference(self.roi_head, ms_bev,
-                                                                                              proposals, valid_size,
-                                                                                              img_size)
-        else:
-            bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
+        # # RPN Part
+        # if do_loss:
+        #     obj_loss, bbx_loss, proposals = self.rpn_algo.training(self.rpn_head, ms_bev, bbx, iscrowd, valid_size,
+        #                                                            training=self.training, do_inference=True)
+        # elif do_prediction:
+        #     proposals = self.rpn_algo.inference(self.rpn_head, ms_bev, valid_size, self.training)
+        #     obj_loss, bbx_loss = None, None
+        # else:
+        #     obj_loss, bbx_loss, proposals = None, None, None
+        #
+        # # ROI Part
+        # if do_loss:
+        #     roi_cls_loss, roi_bbx_loss, roi_msk_loss, roi_cls_logits, roi_bbx_logits, roi_msk_logits = \
+        #         self.inst_algo.training(self.roi_head, ms_bev, proposals, bbx, cat, iscrowd, ids, bev_msk, img_size)
+        # else:
+        #     roi_cls_loss, roi_bbx_loss, roi_msk_loss = None, None, None
+        #     roi_cls_logits, roi_bbx_logits, roi_msk_logits = None, None, None
+        # if do_prediction:
+        #     bbx_pred, cls_pred, obj_pred, msk_pred, roi_msk_logits = self.inst_algo.inference(self.roi_head, ms_bev,
+        #                                                                                       proposals, valid_size,
+        #                                                                                       img_size)
+        # else:
+        #     bbx_pred, cls_pred, obj_pred, msk_pred = None, None, None, None
 
         # Segmentation Part
         if do_loss:
@@ -222,45 +224,55 @@ class PanopticBevNet(nn.Module):
         else:
             sem_loss, sem_reg_loss, sem_conf_mat, sem_pred, sem_logits, sem_feat = None, None, None, None, None, None
 
+        center_loss, offset_loss, center_logits, offset_logits = self.inst_algo.processing(self, self.head, self.head1,
+                                                                                           ms_bev, center, offset,
+                                                                                           valid_size,
+                                                                                           img_size, inst_weights,
+                                                                                           weights_msk, intrinsics)
+
         # Panoptic Fusion. Fuse the semantic and instance predictions to generate a coherent output
-        if do_prediction:
-            # The first channel of po_pred contains the semantic labels
-            # The second channel contains the instance masks with the instance label being the corresponding semantic label
-            po_pred, po_loss, po_logits = self.po_fusion_algo.inference(sem_logits, roi_msk_logits, bbx_pred, cls_pred,
-                                                                        img_size)
-        elif do_loss:
-            po_loss = self.po_fusion_algo.training(sem_logits, roi_msk_logits, bbx, cat, po_gt, img_size)
-            po_pred, po_logits = None, None
-        else:
-            po_pred, po_loss, po_logits = None, None, None
+        # if do_prediction:
+        #     # The first channel of po_pred contains the semantic labels
+        #     # The second channel contains the instance masks with the instance label being the corresponding semantic label
+        #     po_pred, po_loss, po_logits = self.po_fusion_algo.inference(sem_logits, roi_msk_logits, bbx_pred, cls_pred,
+        #                                                                 img_size)
+        # elif do_loss:
+        #     po_loss = self.po_fusion_algo.training(sem_logits, roi_msk_logits, bbx, cat, po_gt, img_size)
+        #     po_pred, po_logits = None, None
+        # else:
+        #     po_pred, po_loss, po_logits = None, None, None
 
         # Prepare outputs
         # LOSSES
-        loss['obj_loss'] = obj_loss
-        loss['bbx_loss'] = bbx_loss
-        loss['roi_cls_loss'] = roi_cls_loss
-        loss['roi_bbx_loss'] = roi_bbx_loss
-        loss['roi_msk_loss'] = roi_msk_loss
+        # loss['obj_loss'] = obj_loss
+        # loss['bbx_loss'] = bbx_loss
+        # loss['roi_cls_loss'] = roi_cls_loss
+        # loss['roi_bbx_loss'] = roi_bbx_loss
+        # loss['roi_msk_loss'] = roi_msk_loss
         loss["sem_loss"] = sem_loss
+        loss["center_loss"] = center_loss
+        loss["offset_loss"] = offset_loss
         # loss['vf_loss'] = vf_loss
         # loss['v_region_loss'] = v_region_loss
         # loss['f_region_loss'] = f_region_loss
-        loss['po_loss'] = po_loss
+        # loss['po_loss'] = po_loss
 
         # PREDICTIONS
-        result['bbx_pred'] = bbx_pred
-        result['cls_pred'] = cls_pred
-        result['obj_pred'] = obj_pred
-        result['msk_pred'] = msk_pred
+        # result['bbx_pred'] = bbx_pred
+        # result['cls_pred'] = cls_pred
+        # result['obj_pred'] = obj_pred
+        # result['msk_pred'] = msk_pred
         result["sem_pred"] = sem_pred
         result['sem_logits'] = sem_logits
+        result["center_logits"] = center_logits
+        result["offset_logits"] = offset_logits
         # result['vf_logits'] = vf_logits_list
         # result['v_region_logits'] = v_region_logits_list
         # result['f_region_logits'] = f_region_logits_list
-        if po_pred is not None:
-            result['po_pred'] = po_pred[0]
-            result['po_class'] = po_pred[1]
-            result['po_iscrowd'] = po_pred[2]
+        # if po_pred is not None:
+        #     result['po_pred'] = po_pred[0]
+        #     result['po_class'] = po_pred[1]
+        #     result['po_iscrowd'] = po_pred[2]
 
         # STATS
         stats['sem_conf'] = sem_conf_mat

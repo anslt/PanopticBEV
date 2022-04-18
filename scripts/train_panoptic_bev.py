@@ -18,18 +18,18 @@ from panoptic_bev.data.misc import iss_collate_fn
 from panoptic_bev.data.sampler import DistributedARBatchSampler
 
 from panoptic_bev.modules.ms_transformer import MultiScaleTransformerVF
-from panoptic_bev.modules.heads import FPNSemanticHeadDPC as FPNSemanticHeadDPC, FPNMaskHead, RPNHead
+from panoptic_bev.modules.heads import FPNSemanticHeadDPC as FPNSemanticHeadDPC, FPNMaskHead, RPNHead, InstanceHead
 
 from panoptic_bev.models.backbone_edet.efficientdet import EfficientDet
 from panoptic_bev.models.panoptic_bev import PanopticBevNet, NETWORK_INPUTS
 
 from panoptic_bev.algos.transformer import TransformerVFAlgo, TransformerVFLoss, TransformerRegionSupervisionLoss
-from panoptic_bev.algos.fpn import InstanceSegAlgoFPN, RPNAlgoFPN
-from panoptic_bev.algos.instance_seg import PredictionGenerator as MskPredictionGenerator, InstanceSegLoss
-from panoptic_bev.algos.rpn import AnchorMatcher, ProposalGenerator, RPNLoss
-from panoptic_bev.algos.detection import PredictionGenerator as BbxPredictionGenerator, DetectionLoss, ProposalMatcher
+# from panoptic_bev.algos.fpn import InstanceSegAlgoFPN, RPNAlgoFPN
+from panoptic_bev.algos.instance_seg2 import InstancedSegAlgo, InstanceSegLoss
+# from panoptic_bev.algos.rpn import AnchorMatcher, ProposalGenerator, RPNLoss
+# from panoptic_bev.algos.detection import PredictionGenerator as BbxPredictionGenerator, DetectionLoss, ProposalMatcher
 from panoptic_bev.algos.semantic_seg import SemanticSegLoss, SemanticSegAlgo
-from panoptic_bev.algos.po_fusion import PanopticLoss, PanopticFusionAlgo
+# from panoptic_bev.algos.po_fusion import PanopticLoss, PanopticFusionAlgo
 
 from panoptic_bev.utils import logging
 from panoptic_bev.utils.meters import AverageMeter, ConfusionMatrixMeter, ConstantMeter
@@ -251,48 +251,48 @@ def make_model(args, config, num_thing, num_stuff):
     transformer_algo = TransformerVFAlgo(vf_loss, region_supervision_loss)
 
     # Create RPN
-    proposal_generator = ProposalGenerator(rpn_config.getfloat("nms_threshold"),
-                                           rpn_config.getint("num_pre_nms_train"),
-                                           rpn_config.getint("num_post_nms_train"),
-                                           rpn_config.getint("num_pre_nms_val"),
-                                           rpn_config.getint("num_post_nms_val"),
-                                           rpn_config.getint("min_size"))
-    anchor_matcher = AnchorMatcher(rpn_config.getint("num_samples"),
-                                   rpn_config.getfloat("pos_ratio"),
-                                   rpn_config.getfloat("pos_threshold"),
-                                   rpn_config.getfloat("neg_threshold"),
-                                   rpn_config.getfloat("void_threshold"))
-    rpn_loss = RPNLoss(rpn_config.getfloat("sigma"))
-    anchor_scales = [int(scale) for scale in rpn_config.getstruct('anchor_scale')]
-    anchor_ratios = [float(ratio) for ratio in rpn_config.getstruct('anchor_ratios')]
-    rpn_algo = RPNAlgoFPN(proposal_generator, anchor_matcher, rpn_loss, anchor_scales, anchor_ratios,
-                          fpn_config.getstruct("out_strides"), rpn_config.getint("fpn_min_level"),
-                          rpn_config.getint("fpn_levels"))
-    rpn_head = RPNHead(transformer_config.getint("bev_ms_channels"), int(len(anchor_scales) * len(anchor_ratios)), 1,
-                       rpn_config.getint("hidden_channels"), norm_act_dynamic)
-
-    # Create instance segmentation network
-    bbx_prediction_generator = BbxPredictionGenerator(roi_config.getfloat("nms_threshold"),
-                                                      roi_config.getfloat("score_threshold"),
-                                                      roi_config.getint("max_predictions"),
-                                                      dataset_name=args.train_dataset)
-    msk_prediction_generator = MskPredictionGenerator()
-    roi_size = roi_config.getstruct("roi_size")
-    proposal_matcher = ProposalMatcher(classes,
-                                       roi_config.getint("num_samples"),
-                                       roi_config.getfloat("pos_ratio"),
-                                       roi_config.getfloat("pos_threshold"),
-                                       roi_config.getfloat("neg_threshold_hi"),
-                                       roi_config.getfloat("neg_threshold_lo"),
-                                       roi_config.getfloat("void_threshold"))
-    bbx_loss = DetectionLoss(roi_config.getfloat("sigma"))
-    msk_loss = InstanceSegLoss()
-    lbl_roi_size = tuple(s * 2 for s in roi_size)
-    roi_algo = InstanceSegAlgoFPN(bbx_prediction_generator, msk_prediction_generator, proposal_matcher, bbx_loss, msk_loss, classes,
-                                  roi_config.getstruct("bbx_reg_weights"), roi_config.getint("fpn_canonical_scale"),
-                                  roi_config.getint("fpn_canonical_level"), roi_size, roi_config.getint("fpn_min_level"),
-                                  roi_config.getint("fpn_levels"), lbl_roi_size, roi_config.getboolean("void_is_background"), args.debug)
-    roi_head = FPNMaskHead(transformer_config.getint("bev_ms_channels"), classes, roi_size, norm_act=norm_act_dynamic)
+    # proposal_generator = ProposalGenerator(rpn_config.getfloat("nms_threshold"),
+    #                                        rpn_config.getint("num_pre_nms_train"),
+    #                                        rpn_config.getint("num_post_nms_train"),
+    #                                        rpn_config.getint("num_pre_nms_val"),
+    #                                        rpn_config.getint("num_post_nms_val"),
+    #                                        rpn_config.getint("min_size"))
+    # anchor_matcher = AnchorMatcher(rpn_config.getint("num_samples"),
+    #                                rpn_config.getfloat("pos_ratio"),
+    #                                rpn_config.getfloat("pos_threshold"),
+    #                                rpn_config.getfloat("neg_threshold"),
+    #                                rpn_config.getfloat("void_threshold"))
+    # rpn_loss = RPNLoss(rpn_config.getfloat("sigma"))
+    # anchor_scales = [int(scale) for scale in rpn_config.getstruct('anchor_scale')]
+    # anchor_ratios = [float(ratio) for ratio in rpn_config.getstruct('anchor_ratios')]
+    # rpn_algo = RPNAlgoFPN(proposal_generator, anchor_matcher, rpn_loss, anchor_scales, anchor_ratios,
+    #                       fpn_config.getstruct("out_strides"), rpn_config.getint("fpn_min_level"),
+    #                       rpn_config.getint("fpn_levels"))
+    # rpn_head = RPNHead(transformer_config.getint("bev_ms_channels"), int(len(anchor_scales) * len(anchor_ratios)), 1,
+    #                    rpn_config.getint("hidden_channels"), norm_act_dynamic)
+    #
+    # # Create instance segmentation network
+    # bbx_prediction_generator = BbxPredictionGenerator(roi_config.getfloat("nms_threshold"),
+    #                                                   roi_config.getfloat("score_threshold"),
+    #                                                   roi_config.getint("max_predictions"),
+    #                                                   dataset_name=args.train_dataset)
+    # msk_prediction_generator = MskPredictionGenerator()
+    # roi_size = roi_config.getstruct("roi_size")
+    # proposal_matcher = ProposalMatcher(classes,
+    #                                    roi_config.getint("num_samples"),
+    #                                    roi_config.getfloat("pos_ratio"),
+    #                                    roi_config.getfloat("pos_threshold"),
+    #                                    roi_config.getfloat("neg_threshold_hi"),
+    #                                    roi_config.getfloat("neg_threshold_lo"),
+    #                                    roi_config.getfloat("void_threshold"))
+    # bbx_loss = DetectionLoss(roi_config.getfloat("sigma"))
+    # msk_loss = InstanceSegLoss()
+    # lbl_roi_size = tuple(s * 2 for s in roi_size)
+    # roi_algo = InstanceSegAlgoFPN(bbx_prediction_generator, msk_prediction_generator, proposal_matcher, bbx_loss, msk_loss, classes,
+    #                               roi_config.getstruct("bbx_reg_weights"), roi_config.getint("fpn_canonical_scale"),
+    #                               roi_config.getint("fpn_canonical_level"), roi_size, roi_config.getint("fpn_min_level"),
+    #                               roi_config.getint("fpn_levels"), lbl_roi_size, roi_config.getboolean("void_is_background"), args.debug)
+    # roi_head = FPNMaskHead(transformer_config.getint("bev_ms_channels"), classes, roi_size, norm_act=norm_act_dynamic)
 
     # Create semantic segmentation network
     W_out = int(dl_config.getstruct("bev_crop")[0] * dl_config.getfloat("scale"))
@@ -309,13 +309,25 @@ def make_model(args, config, num_thing, num_stuff):
                                   pooling_size=sem_config.getstruct("pooling_size"),
                                   norm_act=norm_act_static)
 
+    inst_loss = InstanceSegLoss(ohem=sem_config.getfloat("ohem"), out_shape=out_shape, bev_params=bev_params,
+                               extrinsics=extrinsics)
+    inst_algo = InstancegAlgo(inst_loss, 256, norm_act_norm_act_static)
+    inst_head = FPNSemanticHeadDPC(transformer_config.getint("bev_ms_channels"),
+                                  sem_config.getint("fpn_min_level"),
+                                  sem_config.getint("fpn_levels"),
+                                  256,
+                                  out_size=out_shape,
+                                  pooling_size=sem_config.getstruct("pooling_size"),
+                                  norm_act=norm_act_static)
+    inst_head1 = InstanceHead()
+
     # Panoptic fusion algorithm
-    po_loss = PanopticLoss(classes["stuff"])
-    po_fusion_algo = PanopticFusionAlgo(po_loss, classes["stuff"], classes["thing"], 1)
+    # po_loss = PanopticLoss(classes["stuff"])
+    # po_fusion_algo = PanopticFusionAlgo(po_loss, classes["stuff"], classes["thing"], 1)
 
     # Create the BEV network
-    return PanopticBevNet(body, bev_transformer, rpn_head, roi_head, sem_head, transformer_algo, rpn_algo, roi_algo,
-                          sem_algo, po_fusion_algo, args.train_dataset, classes=classes,
+    return PanopticBevNet(body, bev_transformer, sem_head, inst_head, inst_head1, transformer_algo,
+                          sem_algo, inst_algo, args.train_dataset, classes=classes,
                           front_vertical_classes=transformer_config.getstruct("front_vertical_classes"),
                           front_flat_classes=transformer_config.getstruct("front_flat_classes"),
                           bev_vertical_classes=transformer_config.getstruct('bev_vertical_classes'),
@@ -505,13 +517,15 @@ def validate(model, dataloader, **varargs):
 
     val_meters = {
         "loss": AverageMeter(()),
-        "obj_loss": AverageMeter(()),
-        "bbx_loss": AverageMeter(()),
-        "roi_cls_loss": AverageMeter(()),
-        "roi_bbx_loss": AverageMeter(()),
-        "roi_msk_loss": AverageMeter(()),
+        # "obj_loss": AverageMeter(()),
+        # "bbx_loss": AverageMeter(()),
+        # "roi_cls_loss": AverageMeter(()),
+        # "roi_bbx_loss": AverageMeter(()),
+        # "roi_msk_loss": AverageMeter(()),
         "sem_loss": AverageMeter(()),
-        "po_loss": AverageMeter(()),
+        # "po_loss": AverageMeter(()),
+        "center_loss": AverageMeter(()),
+        "offset_loss": AverageMeter(()),
         "sem_conf": ConfusionMatrixMeter(num_classes),
         "vf_loss": AverageMeter(()),
         "v_region_loss": AverageMeter(()),

@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 from inplace_abn import ABN
 
-from panoptic_bev.modules import TransformerVF
-# from panoptic_bev.modules import TransformerVF_ecm
+from panoptic_bev.modules.transformer import TransformerVF
+# from panoptic_bev.modules.transformer_ecm import TransformerVF_ecm
 
 
 class MultiScaleTransformerVF(nn.Module):

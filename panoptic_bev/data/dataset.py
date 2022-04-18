@@ -7,6 +7,7 @@ import torch.utils.data as data
 import umsgpack
 import json
 from panoptic_bev.data.transform import *
+from panoptic_bev.data.target_transform import PanopticTargetGenerator
 
 
 class BEVKitti360Dataset(data.Dataset):
@@ -25,6 +26,7 @@ class BEVKitti360Dataset(data.Dataset):
         self.split_name = split_name
         self.transform = transform
         self.rgb_cameras = ['front']
+        self.instance_generator=PanopticTargetGenerator
 
         # Folders
         self._img_dir = os.path.join(seam_root_dir, BEVKitti360Dataset._IMG_DIR)
@@ -85,8 +87,9 @@ class BEVKitti360Dataset(data.Dataset):
         front_msk = [Image.open(front_msk_file)]
 
         # Load the weight map
-        weights_msk_file = os.path.join(self._weights_msk_dir, "{}.png".format(img_desc['id']))
-        weights_msk = cv2.imread(weights_msk_file, cv2.IMREAD_UNCHANGED).astype(float)
+        # weights_msk_file = os.path.join(self._weights_msk_dir, "{}.png".format(img_desc['id']))
+        # weights_msk = cv2.imread(weights_msk_file, cv2.IMREAD_UNCHANGED).astype(float)
+        weights_msk = None
         if weights_msk is not None:
             weights_msk_combined = (weights_msk[:, :, 0] + (weights_msk[:, :, 1] / 10000)) * 10000
             weights_msk_combined = [Image.fromarray(weights_msk_combined.astype(np.int32))]
@@ -148,7 +151,7 @@ class BEVKitti360Dataset(data.Dataset):
     def __getitem__(self, item):
         img, bev_msk, front_msk, weights_msk,cat, iscrowd, calib, idx = self._load_item(item)
         rec = self.transform(img=img, bev_msk=bev_msk, front_msk=front_msk, weights_msk=weights_msk, cat=cat,
-                             iscrowd=iscrowd, calib=calib)
+                             iscrowd=iscrowd, calib=calib, nun_stff=self.num_stuff, is_kitti=True)
         size = (img[0].size[1], img[0].size[0])
 
         # Close the files
@@ -189,6 +192,8 @@ class BEVNuScenesDataset(data.Dataset):
         self.split_name = split_name
         self.transform = transform
         self.rgb_cameras = ['front']
+        self.instance_generator = PanopticTargetGenerator()
+
 
         # Folders
         self._img_dir = os.path.join(seam_root_dir, BEVNuScenesDataset._IMG_DIR)
@@ -323,9 +328,11 @@ class BEVNuScenesDataset(data.Dataset):
             for m in vf_msk:
                 m.close()
 
+        target = self.self.instance_generator(rec["np_data"][0],rec["np_data"][1],rec["np_data"][2])
+
         rec["idx"] = idx
         rec["size"] = size
-        return rec
+        return dict(rec, **target)
 
     def get_image_desc(self, idx):
         """Look up an image descriptor given the id"""
