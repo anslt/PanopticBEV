@@ -26,7 +26,7 @@ from panoptic_bev.models.panoptic_bev import PanopticBevNet, NETWORK_INPUTS
 
 from panoptic_bev.algos.transformer import TransformerVFAlgo, TransformerVFLoss, TransformerRegionSupervisionLoss
 # from panoptic_bev.algos.fpn import InstanceSegAlgoFPN, RPNAlgoFPN
-from panoptic_bev.algos.instance_seg2 import InstancedSegAlgo, InstanceSegLoss
+from panoptic_bev.algos.instance_seg2 import InstanceSegAlgo, InstanceSegLoss
 # from panoptic_bev.algos.rpn import AnchorMatcher, ProposalGenerator, RPNLoss
 # from panoptic_bev.algos.detection import PredictionGenerator as BbxPredictionGenerator, DetectionLoss, ProposalMatcher
 from panoptic_bev.algos.semantic_seg import SemanticSegLoss, SemanticSegAlgo
