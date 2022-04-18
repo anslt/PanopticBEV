@@ -334,7 +334,7 @@ class InstanceHead(nn.Module):
                                          norm_act(mid_channels),
                                          nn.Conv2d(mid_channels, mid_channels, 3, 1, 1, bias=False),
                                          norm_act(mid_channels),
-                                         nn.Conv2d(mid_channels, 1, 1, 1, 0, bias=False))
+                                         nn.Conv2d(mid_channels, 2, 1, 1, 0, bias=False))
 
     def forward(self, x):
 
