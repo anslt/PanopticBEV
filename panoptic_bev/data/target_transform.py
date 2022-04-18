@@ -124,6 +124,9 @@ class PanopticTargetGenerator(object):
                 offset[offset_y_index] = center_y - y_coord[mask_index]
                 offset[offset_x_index] = center_x - x_coord[mask_index]
 
+        print(center.shape)
+        print(offset.shape)
+
         return dict(
             foreground=torch.from_numpy(foreground.astype(np.long)),
             center=torch.from_numpy(center.astype(np.float)),
