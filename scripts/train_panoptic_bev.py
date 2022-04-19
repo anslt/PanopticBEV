@@ -788,9 +788,9 @@ def main(args):
             save_snapshot(snapshot_file, config, epoch, 0, best_score, global_step,
                           body=model.module.body.state_dict(),
                           transformer=model.module.transformer.state_dict(),
-                          rpn_head=model.module.rpn_head.state_dict(),
-                          roi_head=model.module.roi_head.state_dict(),
                           sem_head=model.module.sem_head.state_dict(),
+                          inst_head=model.module.inst_head.state_dict(),
+                          inst_head1=model.module.inst_head1.state_dict(),
                           optimizer=optimizer.state_dict(),
                           **meters_out_dict)
 
