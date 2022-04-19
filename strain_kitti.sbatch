@@ -2,7 +2,7 @@
 #SBATCH --job-name="panoptic_bev"
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=5
-#SBATCH --gres=gpu:3,VRAM:48G
+#SBATCH --gres=gpu:2,VRAM:48G
 #SBATCH --mem=32G
 #SBATCH --time=5-0:00:00
 #SBATCH --mail-type=ALL
