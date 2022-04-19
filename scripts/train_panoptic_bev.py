@@ -39,6 +39,7 @@ from panoptic_bev.utils.parallel import DistributedDataParallel
 from panoptic_bev.utils.snapshot import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
+from panoptic_bev.utils.panoptic2 import
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Training Script")
@@ -513,6 +514,7 @@ def validate(model, dataloader, **varargs):
     num_stuff = dataloader.dataset.num_stuff
     num_thing = dataloader.dataset.num_thing
     num_classes = num_stuff + num_thing
+    thing_list = [x for x in range(num_stuff, num_stuff + num_thing)]
 
     loss_weights = varargs['loss_weights']
 
@@ -589,6 +591,14 @@ def validate(model, dataloader, **varargs):
                 val_meters['sem_conf'].update(sem_conf_stat.cpu())
 
             del losses, stats
+
+            sem_seg = pad_packed_images(results["sem_pred"])
+            ctr_hmp = pad_packed_images(results["center_logits"])
+            offsets = pad_packed_images(results["center_logits"])
+            thing_seg =  pad_packed_images(sample['foreground'])
+            result['po_pred'], result['po_class'], result['po_iscrowd'] = \
+                get_instance_segmentation(sem_seg, ctr_hmp, offsets, thing_list, threshold=0.1, nms_kernel=5, top_k=30,
+                                          thing_seg=thing_seg)
 
             # Do the post-processing
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],

@@ -74,11 +74,9 @@ def panoptic_stats(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff):
 
 def panoptic_post_processing(result, idx, msk, cat, iscrowd):
     panoptic_pred_list = []
-    for i, (idy, po_pred, po_class, po_iscrowd, sem_pred, bbx_pred, cls_pred, obj_pred, msk_pred, sem_logits, msk_gt,
-            cat_gt, iscrowd) in enumerate(zip(idx, result['po_pred'], result['po_class'], result['po_iscrowd'],
-                                              result["sem_pred"], result["bbx_pred"], result["cls_pred"],
-                                              result["obj_pred"], result["msk_pred"], result["sem_logits"], msk, cat,
-                                              iscrowd)):
+    for i, (idy, po_pred, po_class, po_iscrowd, sem_pred, msk_gt, cat_gt, iscrowd) in \
+            enumerate(zip(idx, result['po_pred'], result['po_class'], result['po_iscrowd'],
+                                              result["sem_pred"], msk, cat, iscrowd)):
         msk_gt = msk_gt.squeeze(0)
         sem_gt = cat_gt[msk_gt]
 
