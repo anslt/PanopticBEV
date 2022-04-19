@@ -518,6 +518,7 @@ def validate(model, dataloader, **varargs):
     thing_list = [x for x in range(num_stuff, num_stuff + num_thing)]
 
     loss_weights = varargs['loss_weights']
+    top_k = varargs['panoptic']['top_k']
 
     val_meters = {
         "loss": AverageMeter(()),
@@ -599,7 +600,7 @@ def validate(model, dataloader, **varargs):
             thing_seg, _ =  pad_packed_images(sample['foreground'])
             results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                 get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0, void_label=255,
-                                          threshold=0.1, nms_kernel=7, top_k=30, foreground_mask=thing_seg)
+                                          threshold=0.1, nms_kernel=7, top_k=top_k, foreground_mask=thing_seg)
 
 
             # Do the post-processing
