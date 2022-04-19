@@ -241,4 +241,4 @@ def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, 
             po_pred[panoptic == id] = index
             index += 1
     length = len(po_class)
-    return po_pred, [torch.LongTensor(po_class).to(po_pred.device)], [[0] * length]
+    return po_pred, [torch.LongTensor(po_class).to(po_pred.device)], [torch.LongTensor([0] * length).to(po_pred.device)]
