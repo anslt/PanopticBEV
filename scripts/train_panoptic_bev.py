@@ -593,7 +593,7 @@ def validate(model, dataloader, **varargs):
 
             del losses, stats
 
-            sem_seg = pad_packed_images(results["sem_pred"])
+            sem = pad_packed_images(results["sem_pred"])
             ctr_hmp = pad_packed_images(results["center_logits"])
             offsets = pad_packed_images(results["center_logits"])
             thing_seg =  pad_packed_images(sample['foreground'])
@@ -779,7 +779,7 @@ def main(args):
                             rgb_std=config['dataloader'].getstruct('rgb_std'),
                             img_scale=config['dataloader'].getfloat('scale'),
                             debug=args.debug)
-
+        torch.cuda.empty_cache()
         # Save snapshot (only on rank 0)
         if not args.debug and rank == 0:
             snapshot_file = path.join(saved_models_dir, "model_latest.pth")
