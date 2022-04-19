@@ -597,7 +597,7 @@ def validate(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ =  pad_packed_images(sample['foreground'])
-            result['po_pred'], result['po_class'], result['po_iscrowd'] = \
+            results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                 get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0, void_label=255,
                                           threshold=0.1, nms_kernel=7, top_k=30, foreground_mask=thing_seg)
 
