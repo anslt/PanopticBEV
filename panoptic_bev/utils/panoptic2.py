@@ -236,8 +236,9 @@ def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, 
     po_class = [255]
     index = 1
     for id in torch.sort(torch.unique(panoptic)):
-        po_class.append(id // label_divisor)
-        po_pred[panoptic == id] = index
-        index += 1
+        if id != void_label:
+            po_class.append(id // label_divisor)
+            po_pred[panoptic == id] = index
+            index += 1
 
     return po_pred, po_class, [0] * len(po_class)
