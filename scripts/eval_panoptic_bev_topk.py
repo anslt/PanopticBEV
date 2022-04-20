@@ -60,7 +60,6 @@ parser.add_argument("--pre_train", type=str, nargs="*",
 parser.add_argument("--config", required=True, type=str, help="Path to configuration file")
 parser.add_argument("--debug", type=bool, default=False, help="Should the program run in 'debug' mode?")
 parser.add_argument("--freeze_modules", nargs='+', default=[], help="The modules to freeze. Default is empty")
-MAX_K = 40
 
 def log_info(msg, *args, **kwargs):
     if "debug" in kwargs.keys():
@@ -370,6 +369,8 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 
 def test(model, dataloader, **varargs):
+    STEP = 5
+    MAX_K = 300
     model.eval()
 
     if not varargs['debug']:
@@ -464,7 +465,7 @@ def test(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
-            for i in range(1, MAX_K, 2):
+            for i in range(MAX_K, STEP):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                               void_label=255, threshold=0.1, nms_kernel=7, top_k=varargs['top_k'],
@@ -476,9 +477,9 @@ def test(model, dataloader, **varargs):
 
 
                 # Get the evaluation metrics
-                panoptic_buffer_list[i // 2], po_conf_mat_list[i // 2] = compute_panoptic_test_metrics(
-                                                                                   panoptic_pred_list, panoptic_buffer_list[i // 2],
-                                                                                   po_conf_mat_list[i // 2], num_stuff=num_stuff,
+                panoptic_buffer_list[i // STEP], po_conf_mat_list[i // STEP] = compute_panoptic_test_metrics(
+                                                                                   panoptic_pred_list, panoptic_buffer_list[i // STEP],
+                                                                                   po_conf_mat_list[i // STEP], num_stuff=num_stuff,
                                                                                    num_classes=num_classes,
                                                                                    batch_sizes=batch_sizes,
                                                                                    original_sizes=original_sizes)
@@ -503,7 +504,7 @@ def test(model, dataloader, **varargs):
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
-    for i in range(1, MAX_K, 2):
+    for i in range(MAX_K, STEP):
         po_conf_mat = po_conf_mat_list[i // 2].to(device=varargs["device"])
         if not varargs['debug']:
             distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
@@ -524,11 +525,11 @@ def test(model, dataloader, **varargs):
 
     # Save the metrics
     with open("result/result.txt", "w+") as file:
-        for i in range(1, MAX_K, 2):
+        for i in range(MAX_K, STEP):
             scores = {}
-            scores['po_miou'] = po_miou_list[i // 2].mean()
+            scores['po_miou'] = po_miou_list[i // STEP].mean()
             scores['sem_miou'] = sem_miou.mean()
-            scores = get_panoptic_scores(panoptic_buffer_list[i // 2], scores, varargs["device"], num_stuff, varargs['debug'])
+            scores = get_panoptic_scores(panoptic_buffer_list[i // STEP], scores, varargs["device"], num_stuff, varargs['debug'])
             # Update the inference metrics meters
 
 
