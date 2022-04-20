@@ -609,10 +609,10 @@ def main(args):
     width = config["dataloader"].getstruct("bev_crop")[1]
     y_coord = torch.arange(height, dtype=torch.float).repeat(1, width, 1).transpose(1, 2).contiguous()
     x_coord = torch.arange(width, dtype=torch.float).repeat(1, height, 1)
-    if args.val_dataset == 'Kitti360':
+    if args.test_dataset == 'Kitti360':
         filter_ = (x_coord / 4 * 5 > y_coord - (height // 2)) & (- x_coord / 4 * 5 < y_coord - (height // 2))
 
-    elif args.val_dataset == 'nuScenes':
+    elif args.test_dataset == 'nuScenes':
         filter_ = (x_coord / 3 * 2 > y_coord - (height // 2 + 6)) & (- x_coord / 3 * 2 < y_coord - (height // 2 - 6))
 
     if args.resume:
