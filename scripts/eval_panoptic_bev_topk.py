@@ -465,7 +465,7 @@ def test(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
-            for i in range(MAX_K, STEP):
+            for i in range(0, MAX_K, STEP):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                               void_label=255, threshold=0.1, nms_kernel=7, top_k=i+2,
@@ -504,7 +504,7 @@ def test(model, dataloader, **varargs):
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
-    for i in range(MAX_K, STEP):
+    for i in range(0, MAX_K, STEP):
         po_conf_mat = po_conf_mat_list[i // 2].to(device=varargs["device"])
         if not varargs['debug']:
             distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
@@ -526,7 +526,7 @@ def test(model, dataloader, **varargs):
     # Save the metrics
     scores = {}
     with open("result/result.txt", "w+") as file:
-        for i in range(MAX_K, STEP):
+        for i in range(0, MAX_K, STEP):
             scores = {}
             scores['po_miou'] = po_miou_list[i // STEP].mean()
             scores['sem_miou'] = sem_miou.mean()
