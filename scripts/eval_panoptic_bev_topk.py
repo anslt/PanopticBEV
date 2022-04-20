@@ -472,6 +472,7 @@ def test(model, dataloader, **varargs):
                                               foreground_mask=thing_seg, filter_=filter_)
 
                 # Do the post-processing
+                print(i)
                 print(results['po_class'])
                 panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                               sample["iscrowd"])
