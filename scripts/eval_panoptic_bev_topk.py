@@ -492,8 +492,8 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
-            if (it + 1) % 100 == 0:
-                break
+            # if (it + 1) % 100 == 0:
+            #     break
 
 
     if not os.path.exists("result"):
