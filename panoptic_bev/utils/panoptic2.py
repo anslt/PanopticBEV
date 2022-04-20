@@ -10,7 +10,7 @@ import torch.nn.functional as F
 __all__ = ['find_instance_center', 'get_instance_segmentation', 'get_panoptic_segmentation']
 
 
-def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None, filter=None):
+def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None, filter_=None):
     """
     Find the center points from the center heatmap.
     Arguments:
@@ -89,7 +89,7 @@ def group_pixels(ctr, offsets):
 
 
 def get_instance_segmentation(sem_seg, ctr_hmp, offsets, thing_list, threshold=0.1, nms_kernel=3, top_k=None,
-                              thing_seg=None, filter_ = filter_):
+                              thing_seg=None, filter_ = None):
     """
     Post-processing for instance segmentation, gets class agnostic instance id map.
     Arguments:
@@ -114,7 +114,7 @@ def get_instance_segmentation(sem_seg, ctr_hmp, offsets, thing_list, threshold=0
         for thing_class in thing_list:
             thing_seg[sem_seg == thing_class] = 1
 
-    ctr = find_instance_center(ctr_hmp, threshold=threshold, nms_kernel=nms_kernel, top_k=top_k, filter_= filter_)
+    ctr = find_instance_center(ctr_hmp, threshold=threshold, nms_kernel=nms_kernel, top_k=top_k, filter_=filter_)
     if ctr.size(0) == 0:
         return torch.zeros_like(sem_seg), ctr.unsqueeze(0)
     ins_seg = group_pixels(ctr, offsets)
