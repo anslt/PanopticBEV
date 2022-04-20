@@ -524,7 +524,7 @@ def test(model, dataloader, **varargs):
 
         # Log results
         log_info("Evaluation done", debug=varargs['debug'])
-        log_info("\n\n k=", i+1, "\n\n")
+        log_info("\n\n TOP k=" + str(i+1) + "\n\n", debug=varargs['debug'])
 
 
         log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
