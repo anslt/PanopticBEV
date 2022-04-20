@@ -489,8 +489,7 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
-            if it > 100:
-                break
+
 
     if not os.path.exists("result"):
         os.mkdir("result")
