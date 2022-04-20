@@ -2,7 +2,6 @@ import os
 import argparse
 import shutil
 import time
-import math
 from collections import OrderedDict
 from os import path
 import tensorboardX as tensorboard
@@ -531,7 +530,7 @@ def test(model, dataloader, **varargs):
 
             file.write("k=" + str(i+1) + "\n\n")
             for k, v in scores.items():
-                file.write(str(k) + ':' + str(math.round(v.item(),4)) + "\n\n")
+                file.write(str(k) + ':' + str(round(v.item(),4)) + "\n\n")
 
             # Log results
             log_info("Evaluation done", debug=varargs['debug'])
