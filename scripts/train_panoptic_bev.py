@@ -561,6 +561,8 @@ def validate(model, dataloader, **varargs):
     po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
+    filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
+
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
@@ -771,6 +773,25 @@ def main(args):
         best_score = 0
         global_step = 0
 
+    if args.val_dataset == 'Kitti360':
+        height = config["dataloader"].getstruct("bev_crop")[0]
+        width = config["dataloader"].getstruct("bev_crop")[1]
+        y_coord = torch.arange(height, dtype=torch.float).repeat(1, width, 1).transpose(1, 2).contiguous()
+        x_coord = torch.arange(width, dtype=torch.float).repeat(1, height, 1)
+        filter_ = torch.zeros_like(x_coord, dtype=torch.bool)
+        filter_ = (x_coord / 4 * 5 > y_coord - (height // 2)) & (- x_coord / 4 * 5 < y_coord - (height // 2))
+
+    elif args.val_dataset == 'nuScenes':
+        height = config["dataloader"].getstruct("bev_crop")[0]
+        width = config["dataloader"].getstruct("bev_crop")[1]
+        y_coord = torch.arange(height, dtype=torch.float).repeat(1, width, 1).transpose(1, 2).contiguous()
+        x_coord = torch.arange(width, dtype=torch.float).repeat(1, height, 1)
+        filter_ = torch.zeros_like(x_coord, dtype=torch.bool)
+        filter_ = (x_coord / 3 * 2 > y_coord - (height // 2 + 6)) & (- x_coord / 3 * 2 < y_coord - (height // 2 - 6))
+
+    else:
+        raise "ERROR"
+
     for epoch in range(starting_epoch, total_epochs):
         log_info("Starting epoch %d", epoch + 1, debug=args.debug)
         if not batch_update:
@@ -805,6 +826,7 @@ def main(args):
                           optimizer=optimizer.state_dict(),
                           **meters_out_dict)
 
+
         if (epoch + 1) % config["general"].getint("val_interval") == 0:
             saved_models_dir = None if args.debug else saved_models_dir
             log_info("Validating epoch %d", epoch + 1, debug=args.debug)
@@ -819,6 +841,7 @@ def main(args):
                              rgb_std=config['dataloader'].getstruct('rgb_std'),
                              img_scale=config['dataloader'].getfloat('scale'),
                              top_k=config['panoptic'].getint('top_k'),
+                             filter=filter_,
                              debug=args.debug)
 
             # Update the score on the last saved snapshot
