@@ -2,6 +2,7 @@ import os
 import argparse
 import shutil
 import time
+import math
 from collections import OrderedDict
 from os import path
 import tensorboardX as tensorboard
@@ -488,7 +489,8 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
-            break
+            if it > 100:
+                break
 
     if not os.path.exists("result"):
         os.mkdir("result")
@@ -525,11 +527,11 @@ def test(model, dataloader, **varargs):
             scores['sem_miou'] = sem_miou.mean()
             scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
             # Update the inference metrics meters
-    
+
 
             file.write("k=" + str(i+1) + "\n\n")
             for k, v in scores.items():
-                file.write(str(k) + ':' + str(v.item()) + "\n\n")
+                file.write(str(k) + ':' + str(math.round(v.item(),4)) + "\n\n")
 
             # Log results
             log_info("Evaluation done", debug=varargs['debug'])
