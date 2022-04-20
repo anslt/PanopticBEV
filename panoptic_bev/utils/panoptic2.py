@@ -231,8 +231,6 @@ def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, 
     instance, center = get_instance_segmentation(semantic, ctr_hmp, offsets, thing_list,
                                                  threshold=threshold, nms_kernel=nms_kernel, top_k=top_k,
                                                  thing_seg=thing_seg)
-    print(instance.shape)
-    print(center.shape)
     panoptic = merge_semantic_and_instance(semantic, instance, label_divisor, thing_list, stuff_area, void_label)
     po_pred = torch.zeros_like(panoptic)
     po_class = [255]
@@ -244,4 +242,5 @@ def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, 
             po_pred[panoptic == id] = index
             index += 1
     length = len(po_class)
+    print(length)
     return po_pred.cpu(), [torch.LongTensor(po_class)], [torch.LongTensor([0] * length)]
