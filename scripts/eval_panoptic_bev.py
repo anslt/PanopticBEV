@@ -292,7 +292,7 @@ def make_model(args, config, num_thing, num_stuff):
 
     # Create the BEV network
     return PanopticBevNet(body, bev_transformer, sem_head, inst_head, inst_head1, transformer_algo,
-                          sem_algo, inst_algo, args.train_dataset, classes=classes,
+                          sem_algo, inst_algo, args.test_dataset, classes=classes,
                           front_vertical_classes=transformer_config.getstruct("front_vertical_classes"),
                           front_flat_classes=transformer_config.getstruct("front_flat_classes"),
                           bev_vertical_classes=transformer_config.getstruct('bev_vertical_classes'),
