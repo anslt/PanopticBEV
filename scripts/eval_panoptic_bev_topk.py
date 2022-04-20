@@ -411,8 +411,8 @@ def test(model, dataloader, **varargs):
                    "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
 
     # Accumulators for AP, mIoU and panoptic computation
-    panoptic_buffer_list = [torch.zeros(4, num_classes, dtype=torch.double)] * MAX_K // 2
-    po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * MAX_K // 2
+    panoptic_buffer_list = [torch.zeros(4, num_classes, dtype=torch.double)] * (MAX_K // 2)
+    po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * (MAX_K // 2)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
     data_time = time.time()
