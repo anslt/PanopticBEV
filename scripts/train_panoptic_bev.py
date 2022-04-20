@@ -444,7 +444,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
 
-        for msk in zip(sample["bev_msk"]):
+        for msk in sample["bev_msk"]:
             filter = (msk != 0) | filter
         print(filter.numel())
         print(torch.sum(filter))
