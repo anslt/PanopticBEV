@@ -60,6 +60,7 @@ parser.add_argument("--pre_train", type=str, nargs="*",
 parser.add_argument("--config", required=True, type=str, help="Path to configuration file")
 parser.add_argument("--debug", type=bool, default=False, help="Should the program run in 'debug' mode?")
 parser.add_argument("--freeze_modules", nargs='+', default=[], help="The modules to freeze. Default is empty")
+MAX_K = 40
 
 def log_info(msg, *args, **kwargs):
     if "debug" in kwargs.keys():
@@ -410,8 +411,8 @@ def test(model, dataloader, **varargs):
                    "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
 
     # Accumulators for AP, mIoU and panoptic computation
-    panoptic_buffer = torch.zeros(4, num_classes, dtype=torch.double)
-    po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
+    panoptic_buffer = [torch.zeros(4, num_classes, dtype=torch.double)] * MAX_K
+    po_conf_mat = [torch.zeros(256, 256, dtype=torch.double)] * MAX_K
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
     data_time = time.time()
@@ -461,9 +462,7 @@ def test(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
-            panoptic_buffer_list = []
-            po_conf_mat_list = []
-            for k in range(1,41):
+            for k in range(1,MAX_K + 1):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                               void_label=255,
@@ -475,13 +474,11 @@ def test(model, dataloader, **varargs):
 
 
                 # Get the evaluation metrics
-                panoptic_buffer, po_conf_mat = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer,
+                panoptic_buffer[i], po_conf_mat[i] = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer[i],
                                                                                    po_conf_mat, num_stuff=num_stuff,
                                                                                    num_classes=num_classes,
                                                                                    batch_sizes=batch_sizes,
                                                                                    original_sizes=original_sizes)
-                panoptic_buffer_list.append(panoptic_buffer)
-                po_conf_mat_list.append(po_conf_mat)
 
             # Log batch to tensorboard and console
             if (it + 1) % varargs["log_interval"] == 0:
@@ -494,8 +491,8 @@ def test(model, dataloader, **varargs):
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
-    for i in range(40):
-        po_conf_mat = po_conf_mat_list[i].to(device=varargs["device"])
+    for i in range(MAX_K):
+        po_conf_mat = po_conf_mat[i].to(device=varargs["device"])
         if not varargs['debug']:
             distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
         po_conf_mat = po_conf_mat.cpu()[:num_classes, :]
@@ -514,11 +511,11 @@ def test(model, dataloader, **varargs):
     sem_miou = sem_intersection / sem_union
 
     # Save the metrics
-    for i in range(40):
+    for i in range(MAX_K):
         scores = {}
         scores['po_miou'] = po_miou_list[i].mean()
         scores['sem_miou'] = sem_miou.mean()
-        scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
+        scores = get_panoptic_scores(panoptic_buffer[i], scores, varargs["device"], num_stuff, varargs['debug'])
         # Update the inference metrics meters
 
         # Log results
