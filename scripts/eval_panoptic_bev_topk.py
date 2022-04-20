@@ -369,8 +369,8 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 
 def test(model, dataloader, **varargs):
-    STEP = 15
-    MAX_K = 300
+    STEP = 3
+    MAX_K = 60
     model.eval()
 
     if not varargs['debug']:
