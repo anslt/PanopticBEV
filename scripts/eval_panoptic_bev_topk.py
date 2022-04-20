@@ -369,8 +369,8 @@ def log_iter(mode, meters, time_meters, results, metrics, batch=True, **kwargs):
 
 
 def test(model, dataloader, **varargs):
-    STEP = 5
-    MAX_K = 300
+    STEP = 2
+    MAX_K = 30
     model.eval()
 
     if not varargs['debug']:
@@ -468,7 +468,7 @@ def test(model, dataloader, **varargs):
             for i in range(MAX_K, STEP):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
-                                              void_label=255, threshold=0.1, nms_kernel=7, top_k=varargs['top_k'],
+                                              void_label=255, threshold=0.1, nms_kernel=7, top_k=i+2,
                                               foreground_mask=thing_seg, filter_=filter_)
 
                 # Do the post-processing
@@ -524,6 +524,7 @@ def test(model, dataloader, **varargs):
     sem_miou = sem_intersection / sem_union
 
     # Save the metrics
+    scores = {}
     with open("result/result.txt", "w+") as file:
         for i in range(MAX_K, STEP):
             scores = {}
