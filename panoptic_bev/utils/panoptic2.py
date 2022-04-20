@@ -39,6 +39,7 @@ def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None):
 
     # find non-zero elements
     ctr_all = torch.nonzero(ctr_hmp > 0)
+    print(ctr_all.size(0))
     if top_k is None:
         return ctr_all
     elif ctr_all.size(0) < top_k:
