@@ -462,11 +462,11 @@ def test(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
-            for k in range(1,MAX_K + 1):
+            for i in range(MAX_K):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                               void_label=255,
-                                              threshold=0.1, nms_kernel=7, top_k=k, foreground_mask=thing_seg)
+                                              threshold=0.1, nms_kernel=7, top_k=i+1, foreground_mask=thing_seg)
 
                 # Do the post-processing
                 panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
