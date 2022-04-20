@@ -519,7 +519,7 @@ def test(model, dataloader, **varargs):
         scores = {}
         scores['po_miou'] = po_miou_list[i].mean()
         scores['sem_miou'] = sem_miou.mean()
-        scores = get_panoptic_scores(panoptic_buffer[i], scores, varargs["device"], num_stuff, varargs['debug'])
+        scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
         # Update the inference metrics meters
 
         # Log results
