@@ -401,6 +401,7 @@ def test(model, dataloader, **varargs):
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
         idxs = sample['idx']
+        
         with torch.no_grad():
             sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
             sample['calib'], _ = pad_packed_images(sample['calib'])

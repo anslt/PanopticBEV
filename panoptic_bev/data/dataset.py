@@ -85,8 +85,9 @@ class BEVKitti360Dataset(data.Dataset):
         front_msk = [Image.open(front_msk_file)]
 
         # Load the weight map
-        weights_msk_file = os.path.join(self._weights_msk_dir, "{}.png".format(img_desc['id']))
-        weights_msk = cv2.imread(weights_msk_file, cv2.IMREAD_UNCHANGED).astype(float)
+        # weights_msk_file = os.path.join(self._weights_msk_dir, "{}.png".format(img_desc['id']))
+        # weights_msk = cv2.imread(weights_msk_file, cv2.IMREAD_UNCHANGED).astype(float)
+        weights_msk=None
         if weights_msk is not None:
             weights_msk_combined = (weights_msk[:, :, 0] + (weights_msk[:, :, 1] / 10000)) * 10000
             weights_msk_combined = [Image.fromarray(weights_msk_combined.astype(np.int32))]
@@ -148,7 +149,7 @@ class BEVKitti360Dataset(data.Dataset):
     def __getitem__(self, item):
         img, bev_msk, front_msk, weights_msk,cat, iscrowd, calib, idx = self._load_item(item)
         rec = self.transform(img=img, bev_msk=bev_msk, front_msk=front_msk, weights_msk=weights_msk, cat=cat,
-                             iscrowd=iscrowd, calib=calib)
+                             iscrowd=iscrowd, calib=calib, is_kitti=True)
         size = (img[0].size[1], img[0].size[0])
 
         # Close the files
