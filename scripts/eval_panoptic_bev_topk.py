@@ -415,6 +415,8 @@ def test(model, dataloader, **varargs):
     po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * (MAX_K // 2)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
+    filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
+
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
@@ -465,8 +467,8 @@ def test(model, dataloader, **varargs):
             for i in range(1, MAX_K, 2):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
-                                              void_label=255,
-                                              threshold=0.1, nms_kernel=7, top_k=i+1, foreground_mask=thing_seg)
+                                              void_label=255, threshold=0.1, nms_kernel=7, top_k=varargs['top_k'],
+                                              foreground_mask=thing_seg, filter_=filter_)
 
                 # Do the post-processing
                 panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
@@ -601,6 +603,16 @@ def main(args):
     else:
         model = model.cuda(device)
 
+    height = config["dataloader"].getstruct("bev_crop")[0]
+    width = config["dataloader"].getstruct("bev_crop")[1]
+    y_coord = torch.arange(height, dtype=torch.float).repeat(1, width, 1).transpose(1, 2).contiguous()
+    x_coord = torch.arange(width, dtype=torch.float).repeat(1, height, 1)
+    if args.val_dataset == 'Kitti360':
+        filter_ = (x_coord / 4 * 5 > y_coord - (height // 2)) & (- x_coord / 4 * 5 < y_coord - (height // 2))
+
+    elif args.val_dataset == 'nuScenes':
+        filter_ = (x_coord / 3 * 2 > y_coord - (height // 2 + 6)) & (- x_coord / 3 * 2 < y_coord - (height // 2 - 6))
+
     if args.resume:
         epoch = snapshot["training_meta"]["epoch"] + 1
         global_step = snapshot["training_meta"]["global_step"]
@@ -618,6 +630,7 @@ def main(args):
                      rgb_std=config['dataloader'].getstruct('rgb_std'),
                      img_scale=config['dataloader'].getfloat('scale'),
                      top_k=config['panoptic'].getint('top_k'),
+                     filter=filter_,
                      debug=args.debug)
 
 if __name__ == "__main__":
