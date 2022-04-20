@@ -411,8 +411,8 @@ def test(model, dataloader, **varargs):
                    "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
 
     # Accumulators for AP, mIoU and panoptic computation
-    panoptic_buffer_list = [torch.zeros(4, num_classes, dtype=torch.double)] * MAX_K
-    po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * MAX_K
+    panoptic_buffer_list = [torch.zeros(4, num_classes, dtype=torch.double)] * MAX_K // 2
+    po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * MAX_K // 2
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
     data_time = time.time()
@@ -462,7 +462,7 @@ def test(model, dataloader, **varargs):
             ctr_hmp, _ = pad_packed_images(results["center_logits"])
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
-            for i in range(MAX_K):
+            for i in range(1, MAX_K, 2):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                               void_label=255,
@@ -474,8 +474,9 @@ def test(model, dataloader, **varargs):
 
 
                 # Get the evaluation metrics
-                panoptic_buffer_list[i], po_conf_mat_list[i] = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer_list[i],
-                                                                                   po_conf_mat_list[i], num_stuff=num_stuff,
+                panoptic_buffer_list[i // 2], po_conf_mat_list[i // 2] = compute_panoptic_test_metrics(
+                                                                                   panoptic_pred_list, panoptic_buffer_list[i // 2],
+                                                                                   po_conf_mat_list[i // 2], num_stuff=num_stuff,
                                                                                    num_classes=num_classes,
                                                                                    batch_sizes=batch_sizes,
                                                                                    original_sizes=original_sizes)
@@ -499,8 +500,8 @@ def test(model, dataloader, **varargs):
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
-    for i in range(MAX_K):
-        po_conf_mat = po_conf_mat_list[i].to(device=varargs["device"])
+    for i in range(1, MAX_K, 2):
+        po_conf_mat = po_conf_mat_list[i // 2].to(device=varargs["device"])
         if not varargs['debug']:
             distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
         po_conf_mat = po_conf_mat.cpu()[:num_classes, :]
@@ -520,11 +521,11 @@ def test(model, dataloader, **varargs):
 
     # Save the metrics
     with open("result/result.txt", "w+") as file:
-        for i in range(MAX_K):
+        for i in range(1, MAX_K, 2):
             scores = {}
-            scores['po_miou'] = po_miou_list[i].mean()
+            scores['po_miou'] = po_miou_list[i // 2].mean()
             scores['sem_miou'] = sem_miou.mean()
-            scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
+            scores = get_panoptic_scores(panoptic_buffer_list[i // 2], scores, varargs["device"], num_stuff, varargs['debug'])
             # Update the inference metrics meters
 
 
