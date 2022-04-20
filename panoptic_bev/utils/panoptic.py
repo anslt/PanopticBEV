@@ -69,6 +69,10 @@ def panoptic_stats(msk_gt, cat_gt, panoptic_pred, num_classes, _num_stuff):
             iou.index_add_(0, tp_cat, _iou)
 
     # note else branch is not needed because if cat_gt has only void we don't penalize predictions
+    print(iou)
+    print(tp)
+    print(fp)
+    print(fn)
     return iou, tp, fp, fn
 
 
