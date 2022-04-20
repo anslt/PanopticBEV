@@ -444,13 +444,13 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
 
-        if (it + 1) % 100 == 0:
-            print(it + 1,"/",len(dataloader))
-        for msk in sample["bev_msk"]:
-            filter = (msk != 0) | filter
-        print(filter.numel())
-        print(torch.sum(filter))
-        continue
+        # if (it + 1) % 100 == 0:
+        #     print(it + 1,"/",len(dataloader))
+        # for msk in sample["bev_msk"]:
+        #     filter = (msk != 0) | filter
+        # print(filter.numel())
+        # print(torch.sum(filter))
+        # continue
 
         # Update scheduler
         global_step += 1
