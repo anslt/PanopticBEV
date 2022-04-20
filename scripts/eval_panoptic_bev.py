@@ -569,11 +569,11 @@ def main(args):
     if args.resume:
         assert not args.pre_train, "resume and pre_train are mutually exclusive"
         log_info("Loading snapshot from %s", args.resume, debug=args.debug)
-        snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "rpn_head", "roi_head", "sem_head"])
+        snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "sem_head", "inst_head", "inst_head1"])
     elif args.pre_train:
         assert not args.resume, "resume and pre_train are mutually exclusive"
         log_info("Loading pre-trained model from %s", args.pre_train, debug=args.debug)
-        pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "rpn_head", "roi_head", "sem_head"], rank)
+        pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "sem_head", "inst_head", "inst_head1"], rank)
     else:
         raise Exception("Either --resume or --pre_train need to be defined")
         snapshot = None
