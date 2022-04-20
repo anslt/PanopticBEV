@@ -435,6 +435,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
                    "batch_time": AverageMeter((), meters["loss"].momentum)}
 
     data_time = time.time()
+    filter = torch.zeros(1,896,768,dtype=torch.bool).cuda(device=varargs['device'])
 
     for it, sample in enumerate(dataloader):
         sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
@@ -442,6 +443,12 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
 
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
+
+        for image in sample["image"]:
+            filter = (image != 255) | filter
+        print(filter.numel())
+        print(torch.sum(filter))
+        continue
 
         # Update scheduler
         global_step += 1
