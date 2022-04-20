@@ -381,7 +381,7 @@ def test(model, dataloader, **varargs):
     thing_list = [x for x in range(num_stuff, num_stuff + num_thing)]
 
     loss_weights = varargs['loss_weights']
-    top_k = varargs['panoptic']['top_k']
+    # top_k = varargs['panoptic']['top_k']
 
     test_meters = {
         "loss": AverageMeter(()),
@@ -464,7 +464,7 @@ def test(model, dataloader, **varargs):
             results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                 get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
                                           void_label=255,
-                                          threshold=0.1, nms_kernel=7, top_k=top_k, foreground_mask=thing_seg)
+                                          threshold=0.1, nms_kernel=7, top_k=varargs['top_k'], foreground_mask=thing_seg)
 
             # Do the post-processing
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
@@ -603,6 +603,7 @@ def main(args):
                      rgb_mean=config['dataloader'].getstruct('rgb_mean'),
                      rgb_std=config['dataloader'].getstruct('rgb_std'),
                      img_scale=config['dataloader'].getfloat('scale'),
+                     top_k=config['panoptic'].getint('top_k'),
                      debug=args.debug)
 
 if __name__ == "__main__":
