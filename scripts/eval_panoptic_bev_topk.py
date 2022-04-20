@@ -488,6 +488,13 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
+            break
+
+    if not os.path.exists("result"):
+        os.mkdir("result")
+
+    if path.exists("result/result.txt"):
+        os.remove("result/result.txt")
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
@@ -517,6 +524,11 @@ def test(model, dataloader, **varargs):
         scores['sem_miou'] = sem_miou.mean()
         scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
         # Update the inference metrics meters
+
+        with open("result/result.txt", "w+") as file:
+            file.write("k=" + str(i+1) + "\n\n")
+            for k, v in scores.items():
+                file.write(str(k) + ':' + str(v) + "\n\n")
 
         # Log results
         log_info("Evaluation done", debug=varargs['debug'])
