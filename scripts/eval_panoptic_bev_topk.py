@@ -475,7 +475,7 @@ def test(model, dataloader, **varargs):
 
                 # Get the evaluation metrics
                 panoptic_buffer[i], po_conf_mat[i] = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer[i],
-                                                                                   po_conf_mat, num_stuff=num_stuff,
+                                                                                   po_conf_mat[i], num_stuff=num_stuff,
                                                                                    num_classes=num_classes,
                                                                                    batch_sizes=batch_sizes,
                                                                                    original_sizes=original_sizes)
