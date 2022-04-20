@@ -412,8 +412,8 @@ def test(model, dataloader, **varargs):
                    "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
 
     # Accumulators for AP, mIoU and panoptic computation
-    panoptic_buffer_list = [torch.zeros(4, num_classes, dtype=torch.double)] * (MAX_K // 2)
-    po_conf_mat_list = [torch.zeros(256, 256, dtype=torch.double)] * (MAX_K // 2)
+    panoptic_buffer_list = torch.zeros((MAX_K // STEP), 4, num_classes, dtype=torch.double)
+    po_conf_mat_list = torch.zeros((MAX_K // STEP), 256, 256, dtype=torch.double)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
     filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
@@ -472,8 +472,6 @@ def test(model, dataloader, **varargs):
                                               foreground_mask=thing_seg, filter_=filter_)
 
                 # Do the post-processing
-                print(i)
-                print(results['po_class'])
                 panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                               sample["iscrowd"])
 
@@ -507,7 +505,7 @@ def test(model, dataloader, **varargs):
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
     for i in range(0, MAX_K, STEP):
-        po_conf_mat = po_conf_mat_list[i // 2].to(device=varargs["device"])
+        po_conf_mat = po_conf_mat_list[i // STEP].to(device=varargs["device"])
         if not varargs['debug']:
             distributed.all_reduce(po_conf_mat, distributed.ReduceOp.SUM)
         po_conf_mat = po_conf_mat.cpu()[:num_classes, :]
