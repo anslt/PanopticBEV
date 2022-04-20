@@ -520,18 +520,11 @@ def test(model, dataloader, **varargs):
         scores['sem_miou'] = sem_miou.mean()
         scores = get_panoptic_scores(panoptic_buffer[i], scores, varargs["device"], num_stuff, varargs['debug'])
         # Update the inference metrics meters
-        for key in test_metrics.keys():
-            if key in scores.keys():
-                if scores[key] is not None:
-                    test_metrics[key].update(scores[key].cpu())
 
         # Log results
         log_info("Evaluation done", debug=varargs['debug'])
         log_info("\n\n k=", i+1, "\n\n")
-        if varargs["summary"] is not None:
-            log_iter("val", test_meters, time_meters, None, test_metrics, batch=False, summary=varargs['summary'],
-                     global_step=varargs['global_step'], curr_iter=len(dataloader), num_iters=len(dataloader),
-                     epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None)
+
 
         log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
         log_scores("Panoptic Scores", scores)
