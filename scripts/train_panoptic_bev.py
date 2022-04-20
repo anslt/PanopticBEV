@@ -444,6 +444,8 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
 
+        if (it + 1) % 100 == 0:
+            print(it + 1,"/",len(dataloader))
         for msk in sample["bev_msk"]:
             filter = (msk != 0) | filter
         print(filter.numel())
@@ -509,6 +511,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         data_time = time.time()
         # break
 
+    torch.save(filter.cpu(), "filter.pt")
     del results
     return global_step
 
