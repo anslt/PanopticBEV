@@ -462,7 +462,7 @@ def test(model, dataloader, **varargs):
             offsets, _ = pad_packed_images(results["center_logits"])
             thing_seg, _ = pad_packed_images(sample['foreground'])
             panoptic_buffer_list = []
-            panoptic_conf_mat_list = []
+            po_conf_mat_list = []
             for k in range(1,41):
                 results['po_pred'], results['po_class'], results['po_iscrowd'] = \
                     get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
@@ -481,7 +481,7 @@ def test(model, dataloader, **varargs):
                                                                                    batch_sizes=batch_sizes,
                                                                                    original_sizes=original_sizes)
                 panoptic_buffer_list.append(panoptic_buffer)
-                panoptic_conf_mat_list.append(panoptic_conf_mat)
+                po_conf_mat_list.append(po_conf_mat)
 
             # Log batch to tensorboard and console
             if (it + 1) % varargs["log_interval"] == 0:
@@ -491,6 +491,7 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
+            break
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
