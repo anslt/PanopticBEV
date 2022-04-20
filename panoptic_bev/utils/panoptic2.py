@@ -10,7 +10,7 @@ import torch.nn.functional as F
 __all__ = ['find_instance_center', 'get_instance_segmentation', 'get_panoptic_segmentation']
 
 
-def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None):
+def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None, filter=None):
     """
     Find the center points from the center heatmap.
     Arguments:
@@ -26,6 +26,8 @@ def find_instance_center(ctr_hmp, threshold=0.1, nms_kernel=3, top_k=None):
         raise ValueError('Only supports inference for batch size = 1')
 
     # thresholding, setting values below threshold to -1
+    if filter_ is not None:
+        ctr_hmp *= filter_
     ctr_hmp = F.threshold(ctr_hmp, threshold, -1)
 
     # NMS
@@ -87,7 +89,7 @@ def group_pixels(ctr, offsets):
 
 
 def get_instance_segmentation(sem_seg, ctr_hmp, offsets, thing_list, threshold=0.1, nms_kernel=3, top_k=None,
-                              thing_seg=None):
+                              thing_seg=None, filter_ = filter_):
     """
     Post-processing for instance segmentation, gets class agnostic instance id map.
     Arguments:
@@ -112,7 +114,7 @@ def get_instance_segmentation(sem_seg, ctr_hmp, offsets, thing_list, threshold=0
         for thing_class in thing_list:
             thing_seg[sem_seg == thing_class] = 1
 
-    ctr = find_instance_center(ctr_hmp, threshold=threshold, nms_kernel=nms_kernel, top_k=top_k)
+    ctr = find_instance_center(ctr_hmp, threshold=threshold, nms_kernel=nms_kernel, top_k=top_k, filter_= filter_)
     if ctr.size(0) == 0:
         return torch.zeros_like(sem_seg), ctr.unsqueeze(0)
     ins_seg = group_pixels(ctr, offsets)
@@ -179,7 +181,7 @@ def merge_semantic_and_instance(sem_seg, ins_seg, label_divisor, thing_list, stu
 
 
 def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, stuff_area, void_label,
-                              threshold=0.1, nms_kernel=3, top_k=None, foreground_mask=None):
+                              threshold=0.1, nms_kernel=3, top_k=None, foreground_mask=None, filter_=None):
     """
     Post-processing for panoptic segmentation.
     Arguments:
@@ -230,7 +232,7 @@ def get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor, 
 
     instance, center = get_instance_segmentation(semantic, ctr_hmp, offsets, thing_list,
                                                  threshold=threshold, nms_kernel=nms_kernel, top_k=top_k,
-                                                 thing_seg=thing_seg)
+                                                 thing_seg=thing_seg, filter_=filter_)
     panoptic = merge_semantic_and_instance(semantic, instance, label_divisor, thing_list, stuff_area, void_label)
     po_pred = torch.zeros_like(panoptic)
     po_class = [255]
