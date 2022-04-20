@@ -444,7 +444,7 @@ def train(model, optimizer, scheduler, dataloader, meters, **varargs):
         # Log the time
         time_meters['data_time'].update(torch.tensor(time.time() - data_time))
 
-        for image in sample["image"]:
+        for image in sample["img"]:
             filter = (image != 255) | filter
         print(filter.numel())
         print(torch.sum(filter))
