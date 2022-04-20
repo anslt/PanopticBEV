@@ -518,25 +518,26 @@ def test(model, dataloader, **varargs):
     sem_miou = sem_intersection / sem_union
 
     # Save the metrics
-    for i in range(MAX_K):
-        scores = {}
-        scores['po_miou'] = po_miou_list[i].mean()
-        scores['sem_miou'] = sem_miou.mean()
-        scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
-        # Update the inference metrics meters
+    with open("result/result.txt", "w+") as file:
+        for i in range(MAX_K):
+            scores = {}
+            scores['po_miou'] = po_miou_list[i].mean()
+            scores['sem_miou'] = sem_miou.mean()
+            scores = get_panoptic_scores(panoptic_buffer_list[i], scores, varargs["device"], num_stuff, varargs['debug'])
+            # Update the inference metrics meters
+    
 
-        with open("result/result.txt", "w+") as file:
             file.write("k=" + str(i+1) + "\n\n")
             for k, v in scores.items():
-                file.write(str(k) + ':' + str(v) + "\n\n")
+                file.write(str(k) + ':' + str(v.item()) + "\n\n")
 
-        # Log results
-        log_info("Evaluation done", debug=varargs['debug'])
-        log_info("\n\n TOP k=" + str(i+1) + "\n\n", debug=varargs['debug'])
+            # Log results
+            log_info("Evaluation done", debug=varargs['debug'])
+            log_info("\n\n TOP k=" + str(i+1) + "\n\n", debug=varargs['debug'])
 
 
-        log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
-        log_scores("Panoptic Scores", scores)
+            log_miou("Semantic mIoU", sem_miou, dataloader.dataset.categories)
+            log_scores("Panoptic Scores", scores)
 
     return scores['pq'].item()
 
