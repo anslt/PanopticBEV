@@ -488,7 +488,6 @@ def test(model, dataloader, **varargs):
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
-            break
 
     # Finalise Panoptic mIoU computation
     po_miou_list=[]
