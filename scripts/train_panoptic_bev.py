@@ -561,8 +561,8 @@ def validate(model, dataloader, **varargs):
     po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
 
-    filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
-
+    # filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
+    filter_ = None
     data_time = time.time()
 
     for it, sample in enumerate(dataloader):
