@@ -20,5 +20,5 @@ python3 -m torch.distributed.launch --nproc_per_node=4 --master_port=29621 scrip
     --mode=train \
     --train_dataset=Kitti360 \
     --val_dataset=Kitti360 \
-    --config=kitti.ini
+    --config=kitti_mine.ini
 
