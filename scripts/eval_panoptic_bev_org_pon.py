@@ -3,10 +3,8 @@ import argparse
 import shutil
 import time
 from collections import OrderedDict
-from os import path
 import tensorboardX as tensorboard
 import torch
-import torch.optim as optim
 import torch.utils.data as data
 from torch import distributed
 from inplace_abn import ABN
@@ -17,30 +15,28 @@ from panoptic_bev.data.dataset import BEVKitti360Dataset, BEVTransform, BEVNuSce
 from panoptic_bev.data.misc import iss_collate_fn
 from panoptic_bev.data.sampler import DistributedARBatchSampler
 
-from panoptic_bev.modules.ms_transformer import MultiScaleTransformerVF
-from panoptic_bev.modules.heads import FPNSemanticHeadDPC, FPNMaskHead, RPNHead
-from panoptic_bev.modules.heads.fpn import InstanceHead
+from panoptic_bev.modules.ms_transformer_pon import MultiScaleTransformerVF
+from panoptic_bev.modules.heads import FPNSemanticHeadDPC as FPNSemanticHeadDPC, FPNMaskHead, RPNHead
 
 from panoptic_bev.models.backbone_edet.efficientdet import EfficientDet
-from panoptic_bev.models.panoptic_bev import PanopticBevNet, NETWORK_INPUTS
+from panoptic_bev.models.panoptic_bev_org import PanopticBevNet, NETWORK_INPUTS
 
 from panoptic_bev.algos.transformer import TransformerVFAlgo, TransformerVFLoss, TransformerRegionSupervisionLoss
-# from panoptic_bev.algos.fpn import InstanceSegAlgoFPN, RPNAlgoFPN
-from panoptic_bev.algos.instance_seg2 import InstanceSegAlgo, InstanceSegLoss
-# from panoptic_bev.algos.rpn import AnchorMatcher, ProposalGenerator, RPNLoss
-# from panoptic_bev.algos.detection import PredictionGenerator as BbxPredictionGenerator, DetectionLoss, ProposalMatcher
+from panoptic_bev.algos.fpn import InstanceSegAlgoFPN, RPNAlgoFPN
+from panoptic_bev.algos.instance_seg import PredictionGenerator as MskPredictionGenerator, InstanceSegLoss
+from panoptic_bev.algos.rpn import AnchorMatcher, ProposalGenerator, RPNLoss
+from panoptic_bev.algos.detection import PredictionGenerator as BbxPredictionGenerator, DetectionLoss, ProposalMatcher
 from panoptic_bev.algos.semantic_seg import SemanticSegLoss, SemanticSegAlgo
-# from panoptic_bev.algos.po_fusion import PanopticLoss, PanopticFusionAlgo
+from panoptic_bev.algos.po_fusion import PanopticLoss, PanopticFusionAlgo
 
 from panoptic_bev.utils import logging
-from panoptic_bev.utils.meters import AverageMeter, ConfusionMatrixMeter, ConstantMeter
-from panoptic_bev.utils.misc import config_to_string, scheduler_from_config, norm_act_from_config, all_reduce_losses
+from panoptic_bev.utils.meters import AverageMeter, ConfusionMatrixMeter
+from panoptic_bev.utils.misc import config_to_string, norm_act_from_config
 from panoptic_bev.utils.parallel import DistributedDataParallel
-from panoptic_bev.utils.snapshot import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
+from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_snapshots
+from panoptic_bev.utils.snapshot import resume_from_snapshot, pre_train_from_snapshots
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
-from panoptic_bev.utils.panoptic2 import get_panoptic_segmentation
-
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Evaluation Script")
 parser.add_argument("--local_rank", required=True, type=int)
@@ -60,6 +56,7 @@ parser.add_argument("--pre_train", type=str, nargs="*",
 parser.add_argument("--config", required=True, type=str, help="Path to configuration file")
 parser.add_argument("--debug", type=bool, default=False, help="Should the program run in 'debug' mode?")
 parser.add_argument("--freeze_modules", nargs='+', default=[], help="The modules to freeze. Default is empty")
+
 
 def log_info(msg, *args, **kwargs):
     if "debug" in kwargs.keys():
@@ -134,32 +131,33 @@ def make_dataloader(args, config, rank, world_size):
 
     # Evaluation datalaader
     test_tf = BEVTransform(shortest_size=dl_config.getint("shortest_size"),
-                          longest_max_size=dl_config.getint("longest_max_size"),
-                          rgb_mean=dl_config.getstruct("rgb_mean"),
-                          rgb_std=dl_config.getstruct("rgb_std"),
-                          front_resize=dl_config.getstruct("front_resize"),
-                          bev_crop=dl_config.getstruct("bev_crop"))
+                           longest_max_size=dl_config.getint("longest_max_size"),
+                           rgb_mean=dl_config.getstruct("rgb_mean"),
+                           rgb_std=dl_config.getstruct("rgb_std"),
+                           front_resize=dl_config.getstruct("front_resize"),
+                           bev_crop=dl_config.getstruct("bev_crop"))
 
     if args.test_dataset == "Kitti360":
         test_db = BEVKitti360Dataset(seam_root_dir=args.seam_root_dir, dataset_root_dir=args.dataset_root_dir,
-                                    split_name=dl_config['val_set'], transform=test_tf)
+                                     split_name=dl_config['val_set'], transform=test_tf)
     elif args.test_dataset == "nuScenes":
         test_db = BEVNuScenesDataset(seam_root_dir=args.seam_root_dir, dataset_root_dir=args.dataset_root_dir,
-                                    split_name=dl_config['val_set'], transform=test_tf)
+                                     split_name=dl_config['val_set'], transform=test_tf)
 
     if not args.debug:
-        test_sampler = DistributedARBatchSampler(test_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
+        test_sampler = DistributedARBatchSampler(test_db, dl_config.getint("val_batch_size"), world_size, rank,
+                                                 is_train=False)
         test_dl = torch.utils.data.DataLoader(test_db,
-                                             batch_sampler=test_sampler,
-                                             collate_fn=iss_collate_fn,
-                                             pin_memory=True,
-                                             num_workers=dl_config.getint("val_workers"))
+                                              batch_sampler=test_sampler,
+                                              collate_fn=iss_collate_fn,
+                                              pin_memory=True,
+                                              num_workers=dl_config.getint("val_workers"))
     else:
         test_dl = torch.utils.data.DataLoader(test_db,
-                                             batch_size=dl_config.getint("val_batch_size"),
-                                             collate_fn=iss_collate_fn,
-                                             pin_memory=True,
-                                             num_workers=dl_config.getint("val_workers"))
+                                              batch_size=dl_config.getint("val_batch_size"),
+                                              collate_fn=iss_collate_fn,
+                                              pin_memory=True,
+                                              num_workers=dl_config.getint("val_workers"))
 
     return test_dl
 
@@ -183,7 +181,6 @@ def make_model(args, config, num_thing, num_stuff):
         norm_act_static, norm_act_dynamic = norm_act_from_config(base_config)
     else:
         norm_act_static, norm_act_dynamic = ABN, ABN
-
 
     # Create the backbone
     model_compount_coeff = int(base_config["base"][-1])
@@ -216,48 +213,51 @@ def make_model(args, config, num_thing, num_stuff):
     transformer_algo = TransformerVFAlgo(vf_loss, region_supervision_loss)
 
     # Create RPN
-    # proposal_generator = ProposalGenerator(rpn_config.getfloat("nms_threshold"),
-    #                                        rpn_config.getint("num_pre_nms_train"),
-    #                                        rpn_config.getint("num_post_nms_train"),
-    #                                        rpn_config.getint("num_pre_nms_val"),
-    #                                        rpn_config.getint("num_post_nms_val"),
-    #                                        rpn_config.getint("min_size"))
-    # anchor_matcher = AnchorMatcher(rpn_config.getint("num_samples"),
-    #                                rpn_config.getfloat("pos_ratio"),
-    #                                rpn_config.getfloat("pos_threshold"),
-    #                                rpn_config.getfloat("neg_threshold"),
-    #                                rpn_config.getfloat("void_threshold"))
-    # rpn_loss = RPNLoss(rpn_config.getfloat("sigma"))
-    # anchor_scales = [int(scale) for scale in rpn_config.getstruct('anchor_scale')]
-    # anchor_ratios = [float(ratio) for ratio in rpn_config.getstruct('anchor_ratios')]
-    # rpn_algo = RPNAlgoFPN(proposal_generator, anchor_matcher, rpn_loss, anchor_scales, anchor_ratios,
-    #                       fpn_config.getstruct("out_strides"), rpn_config.getint("fpn_min_level"),
-    #                       rpn_config.getint("fpn_levels"))
-    # rpn_head = RPNHead(transformer_config.getint("bev_ms_channels"), int(len(anchor_scales) * len(anchor_ratios)), 1,
-    #                    rpn_config.getint("hidden_channels"), norm_act_dynamic)
-    #
-    # # Create instance segmentation network
-    # bbx_prediction_generator = BbxPredictionGenerator(roi_config.getfloat("nms_threshold"),
-    #                                                   roi_config.getfloat("score_threshold"),
-    #                                                   roi_config.getint("max_predictions"),
-    #                                                   dataset_name=args.train_dataset)
-    # msk_prediction_generator = MskPredictionGenerator()
-    # roi_size = roi_config.getstruct("roi_size")
-    # proposal_matcher = ProposalMatcher(classes,
-    #                                    roi_config.getint("num_samples"),
-    #                                    roi_config.getfloat("pos_ratio"),
-    #                                    roi_config.getfloat("pos_threshold"),
-    #                                    roi_config.getfloat("neg_threshold_hi"),
-    #                                    roi_config.getfloat("neg_threshold_lo"),
-    #                                    roi_config.getfloat("void_threshold"))
-    # bbx_loss = DetectionLoss(roi_config.getfloat("sigma"))
-    # msk_loss = InstanceSegLoss()
-    # lbl_roi_size = tuple(s * 2 for s in roi_size)
-    # roi_algo = InstanceSegAlgoFPN(bbx_prediction_generator, msk_prediction_generator, proposal_matcher, bbx_loss, msk_loss, classes,
-    #                               roi_config.getstruct("bbx_reg_weights"), roi_config.getint("fpn_canonical_scale"),
-    #                               roi_config.getint("fpn_canonical_level"), roi_size, roi_config.getint("fpn_min_level"),
-    #                               roi_config.getint("fpn_levels"), lbl_roi_size, roi_config.getboolean("void_is_background"), args.debug)
-    # roi_head = FPNMaskHead(transformer_config.getint("bev_ms_channels"), classes, roi_size, norm_act=norm_act_dynamic)
+    proposal_generator = ProposalGenerator(rpn_config.getfloat("nms_threshold"),
+                                           rpn_config.getint("num_pre_nms_train"),
+                                           rpn_config.getint("num_post_nms_train"),
+                                           rpn_config.getint("num_pre_nms_val"),
+                                           rpn_config.getint("num_post_nms_val"),
+                                           rpn_config.getint("min_size"))
+    anchor_matcher = AnchorMatcher(rpn_config.getint("num_samples"),
+                                   rpn_config.getfloat("pos_ratio"),
+                                   rpn_config.getfloat("pos_threshold"),
+                                   rpn_config.getfloat("neg_threshold"),
+                                   rpn_config.getfloat("void_threshold"))
+    rpn_loss = RPNLoss(rpn_config.getfloat("sigma"))
+    anchor_scales = [int(scale) for scale in rpn_config.getstruct('anchor_scale')]
+    anchor_ratios = [float(ratio) for ratio in rpn_config.getstruct('anchor_ratios')]
+    rpn_algo = RPNAlgoFPN(proposal_generator, anchor_matcher, rpn_loss, anchor_scales, anchor_ratios,
+                          fpn_config.getstruct("out_strides"), rpn_config.getint("fpn_min_level"),
+                          rpn_config.getint("fpn_levels"))
+    rpn_head = RPNHead(transformer_config.getint("bev_ms_channels"), int(len(anchor_scales) * len(anchor_ratios)), 1,
+                       rpn_config.getint("hidden_channels"), norm_act_dynamic)
+
+    # Create instance segmentation network
+    bbx_prediction_generator = BbxPredictionGenerator(roi_config.getfloat("nms_threshold"),
+                                                      roi_config.getfloat("score_threshold"),
+                                                      roi_config.getint("max_predictions"),
+                                                      dataset_name=args.test_dataset)
+    msk_prediction_generator = MskPredictionGenerator()
+    roi_size = roi_config.getstruct("roi_size")
+    proposal_matcher = ProposalMatcher(classes,
+                                       roi_config.getint("num_samples"),
+                                       roi_config.getfloat("pos_ratio"),
+                                       roi_config.getfloat("pos_threshold"),
+                                       roi_config.getfloat("neg_threshold_hi"),
+                                       roi_config.getfloat("neg_threshold_lo"),
+                                       roi_config.getfloat("void_threshold"))
+    bbx_loss = DetectionLoss(roi_config.getfloat("sigma"))
+    msk_loss = InstanceSegLoss()
+    lbl_roi_size = tuple(s * 2 for s in roi_size)
+    roi_algo = InstanceSegAlgoFPN(bbx_prediction_generator, msk_prediction_generator, proposal_matcher, bbx_loss,
+                                  msk_loss, classes,
+                                  roi_config.getstruct("bbx_reg_weights"), roi_config.getint("fpn_canonical_scale"),
+                                  roi_config.getint("fpn_canonical_level"), roi_size,
+                                  roi_config.getint("fpn_min_level"),
+                                  roi_config.getint("fpn_levels"), lbl_roi_size,
+                                  roi_config.getboolean("void_is_background"), args.debug)
+    roi_head = FPNMaskHead(transformer_config.getint("bev_ms_channels"), classes, roi_size, norm_act=norm_act_dynamic)
 
     # Create semantic segmentation network
     W_out = int(dl_config.getstruct("bev_crop")[0] * dl_config.getfloat("scale"))
@@ -274,29 +274,18 @@ def make_model(args, config, num_thing, num_stuff):
                                   pooling_size=sem_config.getstruct("pooling_size"),
                                   norm_act=norm_act_static)
 
-    inst_loss = InstanceSegLoss(ohem=sem_config.getfloat("ohem"), out_shape=out_shape, bev_params=bev_params,
-                               extrinsics=extrinsics)
-    inst_algo = InstanceSegAlgo(inst_loss, 256)
-    inst_head = FPNSemanticHeadDPC(transformer_config.getint("bev_ms_channels"),
-                                  sem_config.getint("fpn_min_level"),
-                                  sem_config.getint("fpn_levels"),
-                                  256,
-                                  out_size=out_shape,
-                                  pooling_size=sem_config.getstruct("pooling_size"),
-                                  norm_act=norm_act_static)
-    inst_head1 = InstanceHead(norm_act=norm_act_static)
-
     # Panoptic fusion algorithm
-    # po_loss = PanopticLoss(classes["stuff"])
-    # po_fusion_algo = PanopticFusionAlgo(po_loss, classes["stuff"], classes["thing"], 1)
+    po_loss = PanopticLoss(classes["stuff"])
+    po_fusion_algo = PanopticFusionAlgo(po_loss, classes["stuff"], classes["thing"], 1)
 
     # Create the BEV network
-    return PanopticBevNet(body, bev_transformer, sem_head, inst_head, inst_head1, transformer_algo,
-                          sem_algo, inst_algo, args.test_dataset, classes=classes,
+    return PanopticBevNet(body, bev_transformer, rpn_head, roi_head, sem_head, transformer_algo, rpn_algo, roi_algo,
+                          sem_algo, po_fusion_algo, args.test_dataset, classes=classes,
                           front_vertical_classes=transformer_config.getstruct("front_vertical_classes"),
                           front_flat_classes=transformer_config.getstruct("front_flat_classes"),
                           bev_vertical_classes=transformer_config.getstruct('bev_vertical_classes'),
                           bev_flat_classes=transformer_config.getstruct("bev_flat_classes"))
+
 
 def freeze_modules(args, model):
     for module in args.freeze_modules:
@@ -378,22 +367,17 @@ def test(model, dataloader, **varargs):
     num_thing = dataloader.dataset.num_thing
     num_classes = num_stuff + num_thing
 
-    thing_list = [x for x in range(num_stuff, num_stuff + num_thing)]
-
     loss_weights = varargs['loss_weights']
-    # top_k = varargs['panoptic']['top_k']
 
     test_meters = {
         "loss": AverageMeter(()),
-        # "obj_loss": AverageMeter(()),
-        # "bbx_loss": AverageMeter(()),
-        # "roi_cls_loss": AverageMeter(()),
-        # "roi_bbx_loss": AverageMeter(()),
-        # "roi_msk_loss": AverageMeter(()),
+        "obj_loss": AverageMeter(()),
+        "bbx_loss": AverageMeter(()),
+        "roi_cls_loss": AverageMeter(()),
+        "roi_bbx_loss": AverageMeter(()),
+        "roi_msk_loss": AverageMeter(()),
         "sem_loss": AverageMeter(()),
-        # "po_loss": AverageMeter(()),
-        "center_loss": AverageMeter(()),
-        "offset_loss": AverageMeter(()),
+        "po_loss": AverageMeter(()),
         "sem_conf": ConfusionMatrixMeter(num_classes),
         "vf_loss": AverageMeter(()),
         "v_region_loss": AverageMeter(()),
@@ -405,17 +389,14 @@ def test(model, dataloader, **varargs):
 
     # Inference metrics
     test_metrics = {"po_miou": AverageMeter(()), "sem_miou": AverageMeter(()),
-                   "pq": AverageMeter(()), "pq_stuff": AverageMeter(()), "pq_thing": AverageMeter(()),
-                   "sq": AverageMeter(()), "sq_stuff": AverageMeter(()), "sq_thing": AverageMeter(()),
-                   "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
+                    "pq": AverageMeter(()), "pq_stuff": AverageMeter(()), "pq_thing": AverageMeter(()),
+                    "sq": AverageMeter(()), "sq_stuff": AverageMeter(()), "sq_thing": AverageMeter(()),
+                    "rq": AverageMeter(()), "rq_stuff": AverageMeter(()), "rq_thing": AverageMeter(())}
 
     # Accumulators for AP, mIoU and panoptic computation
     panoptic_buffer = torch.zeros(4, num_classes, dtype=torch.double)
     po_conf_mat = torch.zeros(256, 256, dtype=torch.double)
     sem_conf_mat = torch.zeros(num_classes, num_classes, dtype=torch.double)
-
-    filter_ = None
-    # filter_ = varargs["filter"].cuda(device=varargs['device'], non_blocking=True)
 
     data_time = time.time()
 
@@ -423,6 +404,7 @@ def test(model, dataloader, **varargs):
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
         idxs = sample['idx']
+
         with torch.no_grad():
             sample = {k: sample[k].cuda(device=varargs['device'], non_blocking=True) for k in NETWORK_INPUTS}
             sample['calib'], _ = pad_packed_images(sample['calib'])
@@ -460,32 +442,22 @@ def test(model, dataloader, **varargs):
 
             del losses, stats
 
-            sem, _ = pad_packed_images(results["sem_pred"])
-            ctr_hmp, _ = pad_packed_images(results["center_logits"])
-            offsets, _ = pad_packed_images(results["center_logits"])
-            thing_seg, _ = pad_packed_images(sample['foreground'])
-            results['po_pred'], results['po_class'], results['po_iscrowd'] = \
-                get_panoptic_segmentation(sem, ctr_hmp, offsets, thing_list, label_divisor=10000, stuff_area=0,
-                                          void_label=255, threshold=0.1, nms_kernel=7, top_k=varargs['top_k'],
-                                          foreground_mask=thing_seg, filter_=filter_)
-
             # Do the post-processing
             panoptic_pred_list = panoptic_post_processing(results, idxs, sample['bev_msk'], sample['cat'],
                                                           sample["iscrowd"])
 
-
             # Get the evaluation metrics
             panoptic_buffer, po_conf_mat = compute_panoptic_test_metrics(panoptic_pred_list, panoptic_buffer,
-                                                                               po_conf_mat, num_stuff=num_stuff,
-                                                                               num_classes=num_classes,
-                                                                               batch_sizes=batch_sizes,
-                                                                               original_sizes=original_sizes)
+                                                                         po_conf_mat, num_stuff=num_stuff,
+                                                                         num_classes=num_classes,
+                                                                         batch_sizes=batch_sizes,
+                                                                         original_sizes=original_sizes)
 
             # Log batch to tensorboard and console
             if (it + 1) % varargs["log_interval"] == 0:
                 if varargs['summary'] is not None:
                     log_iter("val", test_meters, time_meters, results, None, global_step=varargs['global_step'],
-                             epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None, curr_iter=it+1,
+                             epoch=varargs['epoch'], num_epochs=varargs['num_epochs'], lr=None, curr_iter=it + 1,
                              num_iters=len(dataloader), summary=None)
 
             data_time = time.time()
@@ -572,11 +544,12 @@ def main(args):
     if args.resume:
         assert not args.pre_train, "resume and pre_train are mutually exclusive"
         log_info("Loading snapshot from %s", args.resume, debug=args.debug)
-        snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "sem_head", "inst_head", "inst_head1"])
+        snapshot = resume_from_snapshot(model, args.resume, ["body", "transformer", "rpn_head", "roi_head", "sem_head"])
     elif args.pre_train:
         assert not args.resume, "resume and pre_train are mutually exclusive"
         log_info("Loading pre-trained model from %s", args.pre_train, debug=args.debug)
-        pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "sem_head", "inst_head", "inst_head1"], rank)
+        pre_train_from_snapshots(model, args.pre_train, ["body", "transformer", "rpn_head", "roi_head", "sem_head"],
+                                 rank)
     else:
         raise Exception("Either --resume or --pre_train need to be defined")
         snapshot = None
@@ -590,24 +563,6 @@ def main(args):
     else:
         model = model.cuda(device)
 
-    total = 0
-    for name, parameter in model.named_parameters():
-        print(name)
-        total += parameter.numel()
-        print(parameter.numel())
-    print("TOTAL")
-    print(total)
-
-    height = config["dataloader"].getstruct("bev_crop")[0]
-    width = config["dataloader"].getstruct("bev_crop")[1]
-    y_coord = torch.arange(height, dtype=torch.float).repeat(1, width, 1).transpose(1, 2).contiguous()
-    x_coord = torch.arange(width, dtype=torch.float).repeat(1, height, 1)
-    if args.test_dataset == 'Kitti360':
-        filter_ = (x_coord / 4 * 5 > y_coord - (height // 2)) & (- x_coord / 4 * 5 < y_coord - (height // 2))
-
-    elif args.test_dataset == 'nuScenes':
-        filter_ = (x_coord / 3 * 2 > y_coord - (height // 2 + 6)) & (- x_coord / 3 * 2 < y_coord - (height // 2 - 6))
-
     if args.resume:
         epoch = snapshot["training_meta"]["epoch"] + 1
         global_step = snapshot["training_meta"]["global_step"]
@@ -615,7 +570,7 @@ def main(args):
 
         log_info("Evaluating epoch %d", epoch + 1, debug=args.debug)
         score = test(model, test_dataloader, device=device, summary=summary, global_step=global_step,
-                     epoch=epoch, num_epochs=epoch+1, log_interval=config["general"].getint("log_interval"),
+                     epoch=epoch, num_epochs=epoch + 1, log_interval=config["general"].getint("log_interval"),
                      loss_weights=config['optimizer'].getstruct("loss_weights"),
                      front_vertical_classes=config['transformer'].getstruct('front_vertical_classes'),
                      front_flat_classes=config['transformer'].getstruct('front_flat_classes'),
@@ -624,9 +579,8 @@ def main(args):
                      rgb_mean=config['dataloader'].getstruct('rgb_mean'),
                      rgb_std=config['dataloader'].getstruct('rgb_std'),
                      img_scale=config['dataloader'].getfloat('scale'),
-                     top_k=config['panoptic'].getint('top_k'),
-                     filter=filter_,
                      debug=args.debug)
+
 
 if __name__ == "__main__":
     main(parser.parse_args())
