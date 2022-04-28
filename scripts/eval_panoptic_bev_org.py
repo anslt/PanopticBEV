@@ -541,6 +541,18 @@ def main(args):
     # Freeze modules based on the argument inputs
     model = freeze_modules(args, model)
 
+    total_num = 0
+    trans_num = 0
+    for name, parameter in model.named_parameters():
+        if "transformer" in name:
+            trans_num += parameter.numel()
+        total_num += parameter.numel()
+        # print(parameter.numel())
+    print("TRANS")
+    print(trans_num)
+    print("TOTAL")
+    print(total_num)
+
     if args.resume:
         assert not args.pre_train, "resume and pre_train are mutually exclusive"
         log_info("Loading snapshot from %s", args.resume, debug=args.debug)

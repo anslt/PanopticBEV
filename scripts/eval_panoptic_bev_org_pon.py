@@ -563,6 +563,18 @@ def main(args):
     else:
         model = model.cuda(device)
 
+    total_num = 0
+    trans_num = 0
+    for name, parameter in model.named_parameters():
+        if "transformer" in name:
+            trans_num += parameter.numel()
+        total_num += parameter.numel()
+        # print(parameter.numel())
+    print("TRANS")
+    print(trans_num)
+    print("TOTAL")
+    print(total_num)
+
     if args.resume:
         epoch = snapshot["training_meta"]["epoch"] + 1
         global_step = snapshot["training_meta"]["global_step"]

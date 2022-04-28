@@ -590,13 +590,17 @@ def main(args):
     else:
         model = model.cuda(device)
 
-    total = 0
+    total_num = 0
+    trans_num = 0
     for name, parameter in model.named_parameters():
-        print(name)
-        total += parameter.numel()
-        print(parameter.numel())
+        if "transformer" in name:
+            trans_num += parameter.numel()
+        total_num += parameter.numel()
+        # print(parameter.numel())
+    print("TRANS")
+    print(trans_num)
     print("TOTAL")
-    print(total)
+    print(total_num)
 
     height = config["dataloader"].getstruct("bev_crop")[0]
     width = config["dataloader"].getstruct("bev_crop")[1]

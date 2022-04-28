@@ -589,6 +589,18 @@ def main(args):
                                         find_unused_parameters=True)
     else:
         model = model.cuda(device)
+
+    total_num = 0
+    trans_num = 0
+    for name, parameter in model.named_parameters():
+        if "transformer" in name:
+            trans_num += parameter.numel()
+        total_num += parameter.numel()
+        # print(parameter.numel())
+    print("TRANS")
+    print(trans_num)
+    print("TOTAL")
+    print(total_num)
     
 
     height = config["dataloader"].getstruct("bev_crop")[0]
