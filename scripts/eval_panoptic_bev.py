@@ -550,6 +550,18 @@ def main(args):
         raise Exception("Either --resume or --pre_train need to be defined")
         snapshot = None
 
+    total_num = 0
+    trans_num = 0
+    for name, parameter in model.named_parameters():
+        if "transformer" in name:
+            trans_num += parameter.numel()
+        total_num += parameter.numel()
+        # print(parameter.numel())
+    print("TRANS")
+    print(trans_num)
+    print("TOTAL")
+    print(total_num)
+
     # Init GPU stuff
     if not args.debug:
         torch.backends.cudnn.benchmark = config["general"].getboolean("cudnn_benchmark")
