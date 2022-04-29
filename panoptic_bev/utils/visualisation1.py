@@ -35,48 +35,74 @@ def visualise_bev(img, bev_gt, bev_pred, **varargs):
         for img in img_unpack:
             vis.append((recover_image(img.cpu(), varargs["rgb_mean"], varargs["rgb_std"]) * 255).type(torch.IntTensor))
 
-        vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
-        vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
-        # Add the error map and the masked output. The error map is only a semantic error map.
-        vis_bev_pred_masked = vis_bev_pred.clone()
-        vis_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
+        if bev_gt_unpack.shape[2] < img_unpack[0].shape[2]:
+            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
+            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
 
-        semantic_bev_pred = visualise_semantic_mask_trainid(semantic_pred_unpack, varargs['dataset'])
-        semantic_bev_gt = visualise_semantic_mask_trainid(semantic_gt_unpack, varargs['dataset'])
+            # Add the error map and the masked output. The error map is only a semantic error map.
+            vis_bev_pred_masked = vis_bev_pred.clone()
+            vis_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
 
-        semantic_bev_pred_masked = semantic_bev_pred.clone()
-        semantic_bev_pred_masked[:, semantic_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
+            semantic_bev_pred = visualise_semantic_mask_trainid(semantic_pred_unpack, varargs['dataset'])
+            semantic_bev_gt = visualise_semantic_mask_trainid(semantic_gt_unpack, varargs['dataset'])
 
-        error_map = torch.zeros_like(vis_bev_pred_masked)
-        bev_pred_sem = bev_pred_unpack.clone()
-        bev_gt_sem = bev_gt_unpack.clone()
-        bev_pred_sem[bev_pred_sem > 1000] = bev_pred_sem[bev_pred_sem > 1000] // 1000
-        bev_gt_sem[bev_gt_sem > 1000] = bev_gt_sem[bev_gt_sem > 1000] // 1000
+            semantic_bev_pred_masked = semantic_bev_pred.clone()
+            semantic_bev_pred_masked[:, semantic_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
 
-        instance_bev_pred = vis_bev_pred.clone()
-        instance_bev_gt = vis_bev_gt.clone()
-        instance_bev_pred[:, bev_pred_unpack.squeeze(0) < 1000] = 0
-        instance_bev_gt[:, bev_gt_unpack.squeeze(0) < 1000] = 0
+            error_map = torch.zeros_like(vis_bev_pred_masked)
+            bev_pred_sem = bev_pred_unpack.clone()
+            bev_gt_sem = bev_gt_unpack.clone()
+            bev_pred_sem[bev_pred_sem > 1000] = bev_pred_sem[bev_pred_sem > 1000] // 1000
+            bev_gt_sem[bev_gt_sem > 1000] = bev_gt_sem[bev_gt_sem > 1000] // 1000
 
-        instance_bev_pred_masked = instance_bev_pred.clone()
-        instance_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
+            instance_bev_pred = vis_bev_pred.clone()
+            instance_bev_gt = vis_bev_gt.clone()
+            instance_bev_pred[:, bev_pred_unpack.squeeze(0) < 1000] = 0
+            instance_bev_gt[:, bev_gt_unpack.squeeze(0) < 1000] = 0
 
-        error_region = (bev_gt_sem != bev_pred_sem).squeeze(0)
-        error_map[:, error_region] = 255
-        error_map[:, bev_gt_unpack.squeeze(0) == 255] = 0
+            instance_bev_pred_masked = instance_bev_pred.clone()
+            instance_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
 
-        # Row 1 --> FV img and error map for semantic
-        # vis[0] = torch.cat([vis[0], error_map], dim=2)
-        # Row 2 --> semantic Pred, Masked Pred and GT
-        vis.append(torch.cat([semantic_bev_pred, semantic_bev_pred_masked, semantic_bev_gt], dim=2))
-        # Row 3 --> instance panoptic Pred, Masked Pred and GT
-        vis.append(torch.cat([instance_bev_pred, instance_bev_pred_masked, instance_bev_gt], dim=2))
-        # Row 4 --> panoptic Pred, Masked Pred and GT
-        vis.append(torch.cat([vis_bev_pred, vis_bev_pred_masked, vis_bev_gt], dim=2))
+            error_region = (bev_gt_sem != bev_pred_sem).squeeze(0)
+            error_map[:, error_region] = 255
+            error_map[:, bev_gt_unpack.squeeze(0) == 255] = 0
+
+            # Row 1 --> FV img and error map for semantic
+            # vis[0] = torch.cat([vis[0], error_map], dim=2)
+            # Row 2 --> semantic Pred, Masked Pred and GT
+            vis.append(torch.cat([semantic_bev_pred, semantic_bev_pred_masked, semantic_bev_gt], dim=2))
+            # Row 3 --> instance panoptic Pred, Masked Pred and GT
+            vis.append(torch.cat([instance_bev_pred, instance_bev_pred_masked, instance_bev_gt], dim=2))
+            # Row 4 --> panoptic Pred, Masked Pred and GT
+            vis.append(torch.cat([vis_bev_pred, vis_bev_pred_masked, vis_bev_gt], dim=2))
+
+
+        else:
+            vis_bev_pred = visualise_panoptic_mask_trainid(bev_pred_unpack, varargs['dataset'])
+            vis_bev_gt = visualise_panoptic_mask_trainid(bev_gt_unpack, varargs['dataset'])
+
+            vis.append(vis_bev_gt)
+            vis.append(vis_bev_pred)
+
+            bev_pred_sem = bev_pred_unpack.clone()
+            bev_gt_sem = bev_gt_unpack.clone()
+            bev_pred_sem[bev_pred_sem > 1000] = bev_pred_sem[bev_pred_sem > 1000] // 1000
+            bev_gt_sem[bev_gt_sem > 1000] = bev_gt_sem[bev_gt_sem > 1000] // 1000
+            error_region = (bev_gt_sem != bev_pred_sem).squeeze(0)
+
+            vis_bev_pred_masked = vis_bev_pred.clone()
+            vis_bev_pred_masked[:, bev_gt_unpack.squeeze(0) == 255] = 0  # Set invalid areas to 0
+            vis.append(vis_bev_pred_masked)
+
+            # Add the error map and the masked output
+            error_map = torch.zeros_like(vis_bev_pred_masked)
+            error_map[:, error_region] = 255
+            error_map[:, bev_gt_unpack.squeeze(0) == 255] = 0
+            vis.append(error_map)
 
         # Append all the images together
-        # vis = torch.cat(vis, dim=1)
+        vis = torch.cat(vis, dim=1)
         vis_list.append(vis)
 
     return vis_list
@@ -207,28 +233,26 @@ def save_panoptic_output(sample, sample_category, save_tuple, **varargs):
     if len(sample) > 1:
         po_mask = get_panoptic_mask(sample, varargs["num_stuff"]).unsqueeze(0)
     else:
-        pass
-        # po_mask = sample[0].unsqueeze(0)
+        po_mask = sample[0].unsqueeze(0)
 
     # Save the raw version of the mask
-    # po_mask = po_mask.squeeze(0) # add new line
-    assert len(sample) == 1
-    po_mask_orig = [ po_mask_i.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for po_mask_i in sample[0] ]
-    row, col, _ = po_mask_orig[1].shape
+    po_mask = po_mask.squeeze(0) # add new line
+    po_mask_orig = po_mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8)
+    row, col, _ = po_mask_orig.shape
     col = col // 3
-    # row = row // 4
+    row = row // 4
 
-    fv_img = po_mask_orig[0]
+    fv_img = po_mask_orig[:row, :2*col]
     # error_img = np.rot90(po_mask_orig[:row, 2*col:])
-    sem_pred = np.rot90(po_mask_orig[1][:, :col])
-    sem_masked_pred = np.rot90(po_mask_orig[1][ :, col:2*col])
-    sem_gt = np.rot90(po_mask_orig[1][:, 2*col:])
-    inst_pred = np.rot90(po_mask_orig[2][ :, :col])
-    inst_masked_pred = np.rot90(po_mask_orig[2][ :, col:2 * col])
-    inst_gt = np.rot90(po_mask_orig[2][:, 2 * col:])
-    pano_pred = np.rot90(po_mask_orig[3][ :, :col])
-    pano_masked_pred = np.rot90(po_mask_orig[3 ][ :, col:2 * col])
-    pano_gt = np.rot90(po_mask_orig[3][ :, 2 * col:])
+    sem_pred = np.rot90(po_mask_orig[row:2*row, :col])
+    sem_masked_pred = np.rot90(po_mask_orig[row:2 * row, col:2*col])
+    sem_gt = np.rot90(po_mask_orig[row:2 * row, 2*col:])
+    inst_pred = np.rot90(po_mask_orig[2*row:3 * row, :col])
+    inst_masked_pred = np.rot90(po_mask_orig[2*row:3 * row, col:2 * col])
+    inst_gt = np.rot90(po_mask_orig[2*row:3 * row, 2 * col:])
+    pano_pred = np.rot90(po_mask_orig[3 * row:, :col])
+    pano_masked_pred = np.rot90(po_mask_orig[3 * row:, col:2 * col])
+    pano_gt = np.rot90(po_mask_orig[3 * row:, 2 * col:])
 
     cv2.imwrite(img_name[:-4] + "_fv_img.png", fv_img)
     # cv2.imwrite(img_name[:-4] + "_error_img.png", error_img)
