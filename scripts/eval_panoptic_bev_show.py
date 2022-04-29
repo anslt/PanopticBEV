@@ -420,10 +420,8 @@ def test(model, dataloader, **varargs):
 
     data_time = time.time()
 
-    num_image = 30
-    choose_item = len(dataloader) // 30
     for it, sample in enumerate(dataloader):
-        if (it + 0) % choose_item != 0:
+        if (it + 1) % 10 != 0:
             continue
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
