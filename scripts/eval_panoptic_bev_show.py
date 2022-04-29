@@ -40,6 +40,7 @@ from panoptic_bev.utils.snapshot import save_snapshot, resume_from_snapshot, pre
 from panoptic_bev.utils.sequence import pad_packed_images
 from panoptic_bev.utils.panoptic import compute_panoptic_test_metrics, panoptic_post_processing, get_panoptic_scores
 from panoptic_bev.utils.panoptic2 import get_panoptic_segmentation
+from panoptic_bev.utils.visualisation import visualise_bev, save_panoptic_output
 
 
 parser = argparse.ArgumentParser(description="Panoptic BEV Evaluation Script")
