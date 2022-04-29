@@ -627,6 +627,8 @@ def main(args):
         global_step = snapshot["training_meta"]["global_step"]
         del snapshot
 
+        print(args.test_dataset)
+
         log_info("Evaluating epoch %d", epoch + 1, debug=args.debug)
         score = test(model, test_dataloader, device=device, summary=summary, global_step=global_step,
                      epoch=epoch, num_epochs=epoch+1, log_interval=config["general"].getint("log_interval"),
@@ -640,9 +642,9 @@ def main(args):
                      img_scale=config['dataloader'].getfloat('scale'),
                      top_k=config['panoptic'].getint('top_k'),
                      filter=filter_,
+                     debug=args.debug,
                      saved_models_dir=saved_models_dir,
-                     dataset=args.test_dataset,
-                     debug=args.debug)
+                     dataset=args.test_dataset)
 
 if __name__ == "__main__":
     main(parser.parse_args())
