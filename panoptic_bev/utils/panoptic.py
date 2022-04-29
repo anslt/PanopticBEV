@@ -137,9 +137,9 @@ def get_panoptic_scores(panoptic_buffer, scores_out, device, num_stuff, debug):
     if not debug:
         distributed.all_reduce(panoptic_buffer, distributed.ReduceOp.SUM)
 
-    # print("TP: ", panoptic_buffer[1].cpu().numpy()) # add
-    # print("FP: ", panoptic_buffer[2].cpu().numpy()) # add
-    # print("FN: ", panoptic_buffer[3].cpu().numpy()) # add
+    print("TP: ", panoptic_buffer[1].cpu().numpy()) # add
+    print("FP: ", panoptic_buffer[2].cpu().numpy()) # add
+    print("FN: ", panoptic_buffer[3].cpu().numpy()) # add
     # From buffers to scores
     denom = panoptic_buffer[1] + 0.5 * (panoptic_buffer[2] + panoptic_buffer[3])
     denom[denom == 0] = 1.
@@ -147,6 +147,10 @@ def get_panoptic_scores(panoptic_buffer, scores_out, device, num_stuff, debug):
     RQ = panoptic_buffer[1] / denom
     panoptic_buffer[1][panoptic_buffer[1] == 0] = 1.
     SQ = panoptic_buffer[0] / panoptic_buffer[1]
+
+    print("PQ: ", scores.cpu().numpy())  # add
+    print("SQ: ", SQ.cpu().numpy())  # add
+    print("RQ: ", RQ.cpu().numpy())  # add
 
     scores_out["pq"] = scores.mean()
     scores_out["pq_stuff"] = scores[:num_stuff].mean()
