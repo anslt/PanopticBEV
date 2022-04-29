@@ -641,6 +641,7 @@ def main(args):
                      top_k=config['panoptic'].getint('top_k'),
                      filter=filter_,
                      saved_models_dir=saved_models_dir,
+                     dataset=args.test_dataset,
                      debug=args.debug)
 
 if __name__ == "__main__":
