@@ -143,10 +143,10 @@ def make_dataloader(args, config, rank, world_size):
 
     if args.test_dataset == "Kitti360":
         test_db = BEVKitti360Dataset(seam_root_dir=args.seam_root_dir, dataset_root_dir=args.dataset_root_dir,
-                                    split_name=dl_config['show_set'], transform=test_tf)
+                                    split_name=dl_config['val_set'], transform=test_tf)
     elif args.test_dataset == "nuScenes":
         test_db = BEVNuScenesDataset(seam_root_dir=args.seam_root_dir, dataset_root_dir=args.dataset_root_dir,
-                                    split_name=dl_config['show_set'], transform=test_tf)
+                                    split_name=dl_config['val_set'], transform=test_tf)
 
     if not args.debug:
         test_sampler = DistributedARBatchSampler(test_db, dl_config.getint("val_batch_size"), world_size, rank, is_train=False)
@@ -420,7 +420,11 @@ def test(model, dataloader, **varargs):
 
     data_time = time.time()
 
+    num_image = 30
+    choose_item = len(dataloader // 30)
     for it, sample in enumerate(dataloader):
+        if (it + 0) % choose_item == 0:
+            continue
         batch_sizes = [m.shape[-2:] for m in sample['bev_msk']]
         original_sizes = sample['size']
         idxs = sample['idx']
