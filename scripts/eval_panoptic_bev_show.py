@@ -640,6 +640,7 @@ def main(args):
                      img_scale=config['dataloader'].getfloat('scale'),
                      top_k=config['panoptic'].getint('top_k'),
                      filter=filter_,
+                     saved_models_dir=saved_models_dir,
                      debug=args.debug)
 
 if __name__ == "__main__":
